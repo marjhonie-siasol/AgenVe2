@@ -1,0 +1,54 @@
+version: "1"
+mode: enforce # enforce | dry_run
+
+defaults:
+  action: deny # Fail-closed by default for unlisted tools
+  approval_timeout_seconds: 120
+  retention_days: 90
+
+global_plugins:
+  - name: secret_scanner
+    enabled: true
+  - name: rate_limiter
+    enabled: true
+    max_calls_per_minute: 30
+
+rules:
+  postgres_query:
+    action: allow
+    description: "Allow read-only SQL queries up to 500 rows."
+    plugins:
+      - name: sql_guard
+        allow_statements: [SELECT]
+        max_limit: 500
+
+  read_file:
+    action: allow
+    description: "Allow reading project files while blocking secrets and path traversal."
+    plugins:
+      - name: filesystem_guard
+        allowed_roots: ["."]
+        denied_patterns: [".env*", "*.pem", "*.key", "**/.ssh/**", "*id_rsa*"]
+
+  run_shell:
+    action: allow
+    description: "Restrict shell execution to safe inspection and test commands."
+    plugins:
+      - name: shell_guard
+        allowed_commands: [ls, dir, pwd, git, pytest, echo]
+        block_chaining: true
+
+  slack_post:
+    action: require_approval
+    description: "External team messaging requires operator sign-off."
+    message: "Review Slack message content before sending."
+
+  refund_customer:
+    action: require_approval
+    description: "Require approval for refunds and hard-block amounts above $500."
+    plugins:
+      - name: param_bounds
+        bounds:
+          amount:
+            min: 0
+            max: 500

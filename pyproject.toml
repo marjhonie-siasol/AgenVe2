@@ -1,0 +1,56 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "veto-firewall"
+version = "0.1.0"
+description = "Open-source, Python-native AI Agent Execution Firewall with YAML policies, deterministic security plug-ins, MCP proxy, human approvals, and tamper-evident audit logs."
+readme = "README.md"
+license = { text = "Apache-2.0" }
+requires-python = ">=3.11"
+authors = [{ name = "Veto Contributors" }]
+keywords = ["ai-agents", "firewall", "guardrails", "mcp", "security", "llm"]
+
+dependencies = [
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.32.0",
+    "typer>=0.12.5",
+    "rich>=13.9.0",
+    "pydantic>=2.9.0",
+    "pyyaml>=6.0.2",
+    "sqlmodel>=0.0.22",
+    "sqlglot>=25.24.0",
+    "cachetools>=5.5.0",
+    "httpx>=0.27.2",
+    "websockets>=13.1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3.3",
+    "pytest-asyncio>=0.24.0",
+    "ruff>=0.7.0",
+]
+ml = [
+    "onnxruntime>=1.19.0",
+    "chromadb>=0.5.0",
+]
+
+[project.scripts]
+veto = "veto.cli:app"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/veto"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+ignore = ["B008"]

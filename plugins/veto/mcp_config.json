@@ -1,0 +1,19 @@
+{
+  "mcpServers": {
+    "veto-filesystem": {
+      "command": "veto",
+      "args": [
+        "proxy",
+        "--agent",
+        "antigravity",
+        "--policy",
+        "./policy.yaml",
+        "--",
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "."
+      ]
+    }
+  }
+}
