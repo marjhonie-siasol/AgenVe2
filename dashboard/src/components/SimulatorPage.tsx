@@ -2,17 +2,16 @@ import { AnimatePresence, motion } from "motion/react";
 import {
   AlertCircle,
   ArrowUp,
+  Check,
   CheckCircle2,
   Clock,
-  FileCode2,
   FlaskConical,
-  Terminal,
+  RotateCcw,
 } from "lucide-react";
 import type { SimulationResult } from "../types";
 import {
   QUICK_TESTS,
   SPRING_GENTLE,
-  SPRING_SNAPPY,
   decisionMeta,
   summarizeArgs,
 } from "../utils";
@@ -53,26 +52,24 @@ export function SimulatorPage({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 6 }}
+      initial={{ opacity: 0, y: 4 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -6 }}
+      exit={{ opacity: 0, y: -4 }}
       transition={SPRING_GENTLE}
       className="space-y-4"
     >
-      <div>
-        <h1 className="text-[18px] font-semibold tracking-[-0.02em] text-neutral-900">
-          Rule simulator
-        </h1>
-        <p className="mt-0.5 text-[12.5px] text-neutral-500">
-          Dry-run any tool call against{" "}
-          <code className="rounded bg-neutral-200/70 px-1.5 py-0.5 font-mono text-[11.5px] text-neutral-700">
-            {policyPath}
-          </code>{" "}
-          without executing tools or triggering approvals.
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-sm font-semibold text-neutral-900">
+            Simulator
+          </h1>
+          <p className="mt-0.5 text-xs text-neutral-500">
+            Test tool calls against <code className="font-mono text-neutral-600">{policyPath}</code> without executing.
+          </p>
+        </div>
       </div>
 
-      {/* Quick Preset Pills */}
+      {/* Preset Buttons — 8px radius */}
       <div className="flex flex-wrap items-center gap-1.5">
         {QUICK_TESTS.map((qt) => {
           const isSelected = tool === qt.tool && args.trim() === qt.args.trim();
@@ -83,267 +80,154 @@ export function SimulatorPage({
                 ? "bg-amber-500"
                 : "bg-rose-500";
           return (
-            <motion.button
+            <button
               key={qt.label}
               type="button"
-              whileTap={{ scale: 0.97 }}
               onClick={() => {
                 onToolChange(qt.tool);
                 onArgsChange(qt.args);
                 onSimulate(qt.tool, qt.args);
               }}
-              className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[12px] font-medium transition-all cursor-pointer ${
+              className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-medium transition-colors cursor-pointer ${
                 isSelected
-                  ? "border-blue-300 bg-blue-50/75 text-blue-700 shadow-2xs"
-                  : "border-black/[0.075] bg-white text-neutral-600 shadow-[0_1px_2px_rgba(0,0,0,0.03)] hover:border-black/[0.14] hover:text-neutral-900"
+                  ? "bg-neutral-900 text-white"
+                  : "border border-black/[0.08] bg-white text-neutral-700 hover:bg-neutral-50"
               }`}
             >
-              <span className={`h-1.5 w-1.5 rounded-full ${dotColor}`} />
-              {qt.label}
-            </motion.button>
+              <span className={`h-1.5 w-1.5 rounded-full ${isSelected ? "bg-white" : dotColor}`} />
+              <span>{qt.label}</span>
+            </button>
           );
         })}
       </div>
 
-      {/* Clean 2-Column Practical Workspace: Composer Left + Live Verdict Right */}
-      <div className="grid gap-4 lg:grid-cols-12">
-        {/* Composer Card (1.draft.jpg tactile language) */}
-        <section className="agenve2-card flex flex-col justify-between rounded-[20px] p-4 lg:col-span-7">
+      {/* Main Grid: Input + Verdict */}
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        {/* Input Card */}
+        <section className="agenve2-card rounded-xl p-4 space-y-3">
           <div>
-            <div className="flex items-center justify-between pb-2.5">
-              <label className="inline-flex items-center gap-1.5 rounded-full border border-black/[0.08] bg-neutral-50 px-3 py-1 text-[12px] text-neutral-600 focus-within:border-blue-400 focus-within:bg-white">
-                <Terminal className="h-3.5 w-3.5 text-neutral-400" />
-                <input
-                  type="text"
-                  value={tool}
-                  onChange={(e) => onToolChange(e.target.value)}
-                  aria-label="Tool name"
-                  placeholder="tool_name"
-                  className="w-44 bg-transparent font-mono text-[12.5px] font-medium text-neutral-900 focus:outline-none"
-                />
-              </label>
-
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-neutral-100 px-2.5 py-1 text-[11px] font-medium text-neutral-500">
-                <FileCode2 className="h-3 w-3 text-neutral-400" />
-                <span className="max-w-[140px] truncate font-mono">
-                  {policyPath}
-                </span>
-              </span>
-            </div>
-
-            <textarea
-              value={args}
-              onChange={(e) => onArgsChange(e.target.value)}
-              onKeyDown={(e) => {
-                if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
-                  e.preventDefault();
-                  onSimulate();
-                }
-              }}
-              rows={7}
-              spellCheck={false}
-              placeholder='{"query": "DROP TABLE orders;"}'
-              className="w-full rounded-xl border border-black/[0.065] bg-[#FAFAFA] p-3.5 font-mono text-[12.5px] leading-relaxed text-neutral-800 placeholder:font-sans placeholder:text-neutral-400 focus:border-blue-500/40 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/10"
+            <label className="text-xs font-medium text-neutral-500">
+              Tool name
+            </label>
+            <input
+              type="text"
+              value={tool}
+              onChange={(e) => onToolChange(e.target.value)}
+              placeholder="e.g. postgres_query"
+              className="mt-1 h-8 w-full rounded-lg border border-black/[0.08] bg-white px-3 font-mono text-xs text-neutral-800 placeholder:text-neutral-400 focus:border-blue-500/40 focus:outline-none focus:ring-1 focus:ring-blue-500/20"
             />
           </div>
 
-          <div className="mt-3 flex items-center justify-between pt-1">
-            <span className="text-[11.5px] text-neutral-400">
-              Press <kbd className="rounded bg-neutral-100 px-1.5 py-0.5 font-mono text-[10.5px] text-neutral-600">Ctrl+Enter</kbd> to evaluate
-            </span>
+          <div>
+            <label className="text-xs font-medium text-neutral-500">
+              Arguments (JSON)
+            </label>
+            <textarea
+              value={args}
+              onChange={(e) => onArgsChange(e.target.value)}
+              rows={8}
+              spellCheck={false}
+              className="mt-1 w-full rounded-lg border border-black/[0.08] bg-white p-3 font-mono text-xs leading-relaxed text-neutral-800 focus:border-blue-500/40 focus:outline-none focus:ring-1 focus:ring-blue-500/20"
+            />
+          </div>
 
-            <motion.button
+          <div className="flex items-center justify-between pt-1">
+            <span className="text-xs text-neutral-400">
+              Zero side-effects
+            </span>
+            <button
               type="button"
-              disabled={busy}
-              whileTap={{ scale: 0.96 }}
+              disabled={busy || !tool.trim()}
               onClick={() => onSimulate()}
-              className="inline-flex items-center gap-2 rounded-full bg-[#2563EB] pl-4 pr-2.5 py-1.5 text-[12.5px] font-medium text-white shadow-xs transition-colors hover:bg-blue-700 disabled:opacity-50 cursor-pointer"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-[#2563EB] px-3.5 py-1.5 text-xs font-medium text-white transition-colors hover:bg-blue-700 disabled:opacity-50 cursor-pointer"
             >
-              <span>{busy ? "Evaluating..." : "Run simulation"}</span>
-              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white/15">
-                <ArrowUp className="h-3.5 w-3.5 stroke-[2.25]" />
-              </span>
-            </motion.button>
+              <ArrowUp size={14} strokeWidth={1.75} aria-hidden="true" className="icon-optical" />
+              {busy ? "Testing..." : "Simulate"}
+            </button>
           </div>
         </section>
 
-        {/* Verdict Inspector Card */}
-        <section className="agenve2-card flex flex-col rounded-[20px] p-4 lg:col-span-5">
-          <div className="flex items-center justify-between border-b border-black/[0.055] pb-2.5">
-            <span className="text-[13px] font-semibold text-neutral-900">
-              Evaluation verdict
-            </span>
-            {result && (
-              <span className="font-mono text-[11.5px] text-neutral-400">
-                {result.latency_ms}ms
-              </span>
+        {/* Verdict & History Column */}
+        <div className="space-y-4">
+          {/* Active Result Card */}
+          <section className="agenve2-card rounded-xl p-4 min-h-[160px] flex flex-col justify-center">
+            {error && (
+              <div className="flex items-center gap-2 rounded-lg bg-rose-50 p-3 text-xs text-rose-700">
+                <AlertCircle size={16} strokeWidth={1.75} aria-hidden="true" className="shrink-0 text-rose-500" />
+                <span>{error}</span>
+              </div>
             )}
-          </div>
 
-          <div className="flex flex-1 flex-col justify-center py-4">
-            <AnimatePresence mode="wait">
-              {error ? (
-                <motion.div
-                  key="err"
-                  initial={{ opacity: 0, y: 4 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0 }}
-                  transition={SPRING_SNAPPY}
-                  className="flex items-start gap-2 rounded-xl border border-rose-200 bg-rose-50/70 p-3 text-[12.5px] text-rose-700"
-                >
-                  <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-                  <span>{error}</span>
-                </motion.div>
-              ) : result && resultMeta ? (
-                <motion.div
-                  key={`${tool}-${result.effective_decision}-${result.latency_ms}`}
-                  initial={{ opacity: 0, y: 6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0 }}
-                  transition={SPRING_SNAPPY}
-                  className="space-y-3"
-                >
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span
-                      className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[12px] font-semibold ${resultMeta.pillClass}`}
-                    >
-                      {result.effective_decision === "ALLOW" ? (
-                        <CheckCircle2 className="h-3.5 w-3.5" />
-                      ) : result.effective_decision === "REQUIRE_APPROVAL" ? (
-                        <Clock className="h-3.5 w-3.5" />
-                      ) : (
-                        <AlertCircle className="h-3.5 w-3.5" />
-                      )}
-                      {result.effective_decision}
-                    </span>
+            {!error && !result && (
+              <div className="py-6 text-center text-xs text-neutral-400">
+                Select a preset or click Simulate to evaluate.
+              </div>
+            )}
 
-                    <span className="rounded-md bg-neutral-100 px-2 py-0.5 font-mono text-[11px] text-neutral-600">
-                      {result.plugin_triggered || result.rule_triggered}
-                    </span>
-                  </div>
-
-                  <p className="text-[12.5px] leading-relaxed text-neutral-700">
-                    {result.reason}
-                  </p>
-
-                  <div className="space-y-1.5 border-t border-black/[0.055] pt-2.5 text-[11.5px]">
-                    <div className="flex items-center justify-between">
-                      <span className="text-neutral-400">Rule matched</span>
-                      <span className="font-mono text-neutral-700">
-                        {result.rule_triggered}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-neutral-400">Security plug-in</span>
-                      <span className="font-mono text-neutral-700">
-                        {result.plugin_triggered || "none"}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="mb-1 text-[11px] font-medium text-neutral-400">
-                      Redacted arguments
-                    </div>
-                    <pre className="max-h-32 overflow-auto rounded-xl border border-black/[0.06] bg-[#FAFAFA] p-2.5 font-mono text-[11.5px] text-neutral-700">
-                      {JSON.stringify(result.redacted_arguments, null, 2)}
-                    </pre>
-                  </div>
-                </motion.div>
-              ) : (
-                <motion.div
-                  key="empty"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="flex flex-col items-center py-6 text-center"
-                >
-                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-neutral-100 text-neutral-400">
-                    <FlaskConical className="h-4 w-4" />
-                  </div>
-                  <p className="mt-2.5 text-[12.5px] font-medium text-neutral-600">
-                    Ready to evaluate
-                  </p>
-                  <p className="mt-0.5 max-w-[220px] text-[12px] text-neutral-400">
-                    Pick a preset pill above or run custom JSON arguments.
-                  </p>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        </section>
-      </div>
-
-      {/* Session Simulation History Rail */}
-      {history.length > 0 && (
-        <section className="agenve2-card overflow-hidden rounded-[20px]">
-          <div className="flex items-center justify-between border-b border-black/[0.055] px-5 py-3">
-            <h2 className="text-[13.5px] font-semibold text-neutral-900">
-              Recent simulations
-            </h2>
-            <span className="font-mono text-[11.5px] text-neutral-400">
-              {history.length} this session
-            </span>
-          </div>
-
-          <div className="px-5 py-2.5">
-            <div className="relative">
-              {history.map((item, idx) => {
-                const meta = decisionMeta(item.result.effective_decision);
-                const isFirst = idx === 0;
-                const isLast = idx === history.length - 1;
-                return (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={() => {
-                      onToolChange(item.tool);
-                      onArgsChange(JSON.stringify(item.args, null, 2));
-                    }}
-                    className="relative flex w-full items-center justify-between gap-3 rounded-xl py-2 pl-7 pr-2 text-left transition-colors hover:bg-neutral-50 cursor-pointer"
+            {!error && result && resultMeta && (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span
+                    className={`inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-xs font-medium ${resultMeta.pillClass}`}
                   >
-                    {!isFirst && (
-                      <span
-                        aria-hidden="true"
-                        className="pointer-events-none absolute left-[11px] top-0 h-[18px] w-[1.5px] bg-neutral-200/80"
-                      />
-                    )}
-                    {!isLast && (
-                      <span
-                        aria-hidden="true"
-                        className="pointer-events-none absolute left-[11px] top-[18px] bottom-0 w-[1.5px] bg-neutral-200/80"
-                      />
-                    )}
-                    <span
-                      aria-hidden="true"
-                      className={`pointer-events-none absolute left-[7.5px] top-1/2 h-[8px] w-[8px] -translate-y-1/2 rounded-full ring-2 ring-white ${meta.dotClass}`}
-                    />
+                    <span className={`h-1.5 w-1.5 rounded-full ${resultMeta.dotClass}`} />
+                    {resultMeta.label}
+                  </span>
+                  <span className="font-mono text-xs text-neutral-400 tabular-nums">
+                    {result.latency_ms}ms
+                  </span>
+                </div>
 
-                    <div className="flex min-w-0 flex-1 items-center gap-2">
-                      <span className="font-mono text-[12.5px] font-medium text-neutral-900">
-                        {item.tool}
-                      </span>
-                      <span className="truncate font-mono text-[12px] text-neutral-400">
-                        {summarizeArgs(item.args)}
-                      </span>
-                    </div>
+                <p className="text-xs text-neutral-800">
+                  {result.reason}
+                </p>
 
-                    <div className="flex shrink-0 items-center gap-2">
-                      <span
-                        className={`rounded-full border px-2 py-0.5 text-[10.5px] font-medium ${meta.pillClass}`}
-                      >
-                        {item.result.effective_decision}
+                <div className="flex flex-wrap items-center gap-2 text-xs text-neutral-400 font-mono pt-1">
+                  <span>rule: {result.rule_triggered}</span>
+                  {result.plugin_triggered && (
+                    <span>&middot; guard: {result.plugin_triggered}</span>
+                  )}
+                </div>
+              </div>
+            )}
+          </section>
+
+          {/* Past Simulations */}
+          {history.length > 0 && (
+            <section className="agenve2-card rounded-xl p-3">
+              <span className="text-xs font-medium text-neutral-400">
+                Recent simulations
+              </span>
+              <div className="mt-2 divide-y divide-black/[0.04]">
+                {history.slice(0, 4).map((h) => {
+                  const meta = decisionMeta(h.result.effective_decision);
+                  return (
+                    <button
+                      key={h.id}
+                      type="button"
+                      onClick={() => {
+                        onToolChange(h.tool);
+                        onArgsChange(JSON.stringify(h.args, null, 2));
+                      }}
+                      className="flex w-full items-center justify-between py-1.5 text-left transition-colors hover:text-blue-600 cursor-pointer"
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className={`h-1.5 w-1.5 rounded-full ${meta.dotClass}`} />
+                        <span className="font-mono text-xs text-neutral-800">
+                          {h.tool}
+                        </span>
+                      </div>
+                      <span className="font-mono text-xs text-neutral-400 tabular-nums">
+                        {h.result.latency_ms}ms
                       </span>
-                      <span className="font-mono text-[11.5px] text-neutral-400">
-                        {item.result.latency_ms}ms
-                      </span>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </section>
+          )}
+        </div>
+      </div>
     </motion.div>
   );
 }

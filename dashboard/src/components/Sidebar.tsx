@@ -9,6 +9,7 @@ import {
   X,
 } from "lucide-react";
 import { SPRING_SNAPPY } from "../utils";
+import logoUrl from "../assets/agenve2.logo.png";
 
 export type NavSectionId =
   | "overview"
@@ -51,10 +52,10 @@ export function Sidebar({
 }: SidebarProps) {
   const groups: Array<{ title: string; items: NavItem[] }> = [
     {
-      title: "Monitoring",
+      title: "Monitor",
       items: [
         { id: "overview", label: "Overview", icon: LayoutDashboard },
-        { id: "timeline", label: "Execution timeline", icon: Activity },
+        { id: "timeline", label: "Timeline", icon: Activity },
         {
           id: "approvals",
           label: "Approvals",
@@ -65,13 +66,13 @@ export function Sidebar({
       ],
     },
     {
-      title: "Governance",
+      title: "Configure",
       items: [
-        { id: "simulator", label: "Rule simulator", icon: FlaskConical },
-        { id: "policy", label: "Policy YAML", icon: FileCode2 },
+        { id: "simulator", label: "Simulator", icon: FlaskConical },
+        { id: "policy", label: "Policy", icon: FileCode2 },
         {
           id: "plugins",
-          label: "Security plug-ins",
+          label: "Guards",
           icon: Shield,
           badge: pluginCount > 0 ? pluginCount : undefined,
           badgeTone: "neutral",
@@ -81,16 +82,16 @@ export function Sidebar({
   ];
 
   const renderNavContent = (isCollapsed: boolean) => (
-    <div className="flex h-full flex-col justify-between py-3">
-      <div className="space-y-5 px-2.5">
-        {groups.map((group) => (
-          <div key={group.title}>
+    <div className="flex h-full flex-col justify-between py-4">
+      <div className="space-y-4 px-3">
+        {groups.map((group, gIdx) => (
+          <div key={group.title} className={gIdx > 0 ? "pt-2" : ""}>
             {!isCollapsed && (
-              <div className="mb-1.5 px-2.5 text-[10.5px] font-semibold uppercase tracking-[0.06em] text-neutral-400">
+              <div className="mb-2 px-3 text-xs font-medium text-neutral-400">
                 {group.title}
               </div>
             )}
-            <div className="space-y-0.5">
+            <div className="space-y-1">
               {group.items.map((item) => {
                 const Icon = item.icon;
                 const isActive = active === item.id;
@@ -98,55 +99,43 @@ export function Sidebar({
                   <button
                     key={item.id}
                     type="button"
-                    title={isCollapsed ? item.label : undefined}
                     onClick={() => {
                       onSelect(item.id);
                       onCloseMobile();
                     }}
-                    className={`group relative flex w-full items-center rounded-lg text-[13px] transition-colors cursor-pointer ${
+                    title={isCollapsed ? item.label : undefined}
+                    className={`group relative flex h-9 w-full items-center rounded-lg transition-colors cursor-pointer ${
                       isCollapsed
-                        ? "justify-center px-0 py-2"
-                        : "justify-between px-2.5 py-2"
+                        ? "justify-center px-0"
+                        : "justify-between px-3 text-left"
                     } ${
                       isActive
-                        ? "font-medium text-[#2563EB]"
-                        : "text-neutral-600 hover:bg-neutral-100/80 hover:text-neutral-900"
+                        ? "font-medium text-neutral-900 bg-neutral-100"
+                        : "text-neutral-600 hover:bg-neutral-100/70 hover:text-neutral-900"
                     }`}
                   >
-                    {isActive && (
-                      <motion.span
-                        layoutId="sidebar-active-bg"
-                        transition={SPRING_SNAPPY}
-                        className="absolute inset-0 rounded-lg bg-blue-50/85 ring-1 ring-blue-200/50"
-                      />
-                    )}
-                    {isActive && !isCollapsed && (
-                      <motion.span
-                        layoutId="sidebar-active-bar"
-                        transition={SPRING_SNAPPY}
-                        className="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-[#2563EB]"
-                      />
-                    )}
-
-                    <span className="relative z-10 flex min-w-0 items-center gap-2.5">
+                    <div className="flex items-center gap-2.5">
                       <Icon
-                        className={`h-[16px] w-[16px] shrink-0 ${
+                        size={18}
+                        strokeWidth={1.75}
+                        aria-hidden="true"
+                        className={`shrink-0 transition-colors ${
                           isActive
                             ? "text-[#2563EB]"
-                            : "text-neutral-400 group-hover:text-neutral-700"
+                            : "text-neutral-400 group-hover:text-neutral-600"
                         }`}
                       />
                       {!isCollapsed && (
-                        <span className="truncate">{item.label}</span>
+                        <span className="text-sm">{item.label}</span>
                       )}
-                    </span>
+                    </div>
 
                     {!isCollapsed && item.badge !== undefined && (
                       <span
-                        className={`relative z-10 rounded-full px-1.5 py-0.5 font-mono text-[10.5px] font-medium ${
+                        className={`rounded-md px-1.5 py-0.5 font-mono text-xs font-medium tabular-nums ${
                           item.badgeTone === "amber"
                             ? "bg-amber-100 text-amber-800"
-                            : "bg-neutral-100 text-neutral-500"
+                            : "bg-neutral-100 text-neutral-600"
                         }`}
                       >
                         {item.badge}
@@ -156,7 +145,7 @@ export function Sidebar({
                     {isCollapsed &&
                       item.badge !== undefined &&
                       item.badgeTone === "amber" && (
-                        <span className="absolute right-2 top-1.5 h-2 w-2 rounded-full bg-amber-500 ring-2 ring-white" />
+                        <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-amber-500" />
                       )}
                   </button>
                 );
@@ -166,55 +155,35 @@ export function Sidebar({
         ))}
       </div>
 
-      {/* Quiet Console Footer Status */}
-      <div className="border-t border-black/[0.06] px-3 pt-3">
+      {/* Footer Status */}
+      <div className="border-t border-black/[0.08] px-4 pt-3">
         {isCollapsed ? (
-          <div
-            title={
-              killSwitch
-                ? "Firewall halted"
-                : wsConnected
-                  ? "Live stream connected"
-                  : "Reconnecting"
-            }
-            className="flex justify-center py-1"
-          >
+          <div className="flex justify-center py-1">
             <span
               className={`h-2 w-2 rounded-full ${
                 killSwitch
                   ? "bg-rose-500"
                   : wsConnected
                     ? "bg-emerald-500"
-                    : "bg-amber-400 animate-pulse"
+                    : "bg-amber-400"
               }`}
             />
           </div>
         ) : (
-          <div className="rounded-xl bg-[#F7F7F7] px-3 py-2.5 ring-1 ring-black/[0.05]">
-            <div className="flex items-center justify-between text-[11.5px]">
-              <span className="inline-flex items-center gap-1.5 font-medium text-neutral-700">
-                <span
-                  className={`h-1.5 w-1.5 rounded-full ${
-                    killSwitch
-                      ? "bg-rose-500"
-                      : wsConnected
-                        ? "bg-emerald-500"
-                        : "bg-amber-400 animate-pulse"
-                  }`}
-                />
-                {killSwitch
-                  ? "Halted"
-                  : wsConnected
-                    ? "Stream live"
-                    : "Reconnecting"}
-              </span>
-              <span className="font-mono text-[10.5px] text-neutral-400">
-                v0.1.0
-              </span>
-            </div>
-            <p className="mt-1 text-[11px] text-neutral-400">
-              Fail-closed &middot; SQLite WAL
-            </p>
+          <div className="flex items-center justify-between text-xs text-neutral-500">
+            <span className="inline-flex items-center gap-1.5">
+              <span
+                className={`h-1.5 w-1.5 rounded-full ${
+                  killSwitch
+                    ? "bg-rose-500"
+                    : wsConnected
+                      ? "bg-emerald-500"
+                      : "bg-amber-400"
+                }`}
+              />
+              {killSwitch ? "Halted" : wsConnected ? "Online" : "Connecting"}
+            </span>
+            <span className="font-mono text-neutral-400">v0.1.0</span>
           </div>
         )}
       </div>
@@ -223,15 +192,13 @@ export function Sidebar({
 
   return (
     <>
-      {/* Desktop Sidebar */}
+      {/* Desktop Sidebar — fixed to viewport, immune to page scroll */}
       <aside
-        className={`hidden shrink-0 border-r border-black/[0.07] bg-white transition-[width] duration-200 ease-out md:block ${
-          collapsed ? "w-[60px]" : "w-[228px]"
+        className={`hidden shrink-0 border-r border-black/[0.07] bg-white transition-[width] duration-200 ease-out md:block fixed left-0 top-14 bottom-0 z-30 overflow-y-auto ${
+          collapsed ? "w-[60px]" : "w-[210px]"
         }`}
       >
-        <div className="sticky top-12 h-[calc(100vh-3rem)] overflow-y-auto">
-          {renderNavContent(collapsed)}
-        </div>
+        {renderNavContent(collapsed)}
       </aside>
 
       {/* Mobile Slide-Over Drawer */}
@@ -239,17 +206,17 @@ export function Sidebar({
         <div className="fixed inset-0 z-50 flex md:hidden">
           <div
             onClick={onCloseMobile}
-            className="fixed inset-0 bg-black/20 backdrop-blur-[1px]"
+            className="fixed inset-0 bg-black/20 backdrop-blur-[2px]"
           />
-          <aside className="relative z-10 flex w-[248px] flex-col border-r border-black/[0.08] bg-white shadow-xl">
-            <div className="flex h-12 items-center justify-between border-b border-black/[0.06] px-4">
+          <aside className="relative z-10 flex w-[240px] flex-col border-r border-black/[0.08] bg-white shadow-xl">
+            <div className="flex h-14 items-center justify-between border-b border-black/[0.06] px-4">
               <div className="flex items-center gap-2">
                 <img
-                  src="/agenve2.logo.png"
+                  src={logoUrl}
                   alt="AgenVe2"
-                  className="h-6 w-6 rounded-md object-contain"
+                  className="h-6 w-6 rounded-lg object-contain"
                 />
-                <span className="text-[14px] font-semibold tracking-[-0.015em]">
+                <span className="text-[14px] font-semibold text-neutral-900">
                   AgenVe2
                 </span>
               </div>
@@ -257,9 +224,9 @@ export function Sidebar({
                 type="button"
                 onClick={onCloseMobile}
                 aria-label="Close navigation"
-                className="rounded-lg p-1 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-700 cursor-pointer"
+                className="flex h-9 w-9 items-center justify-center rounded-lg text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-700 cursor-pointer"
               >
-                <X className="h-4 w-4" />
+                <X size={18} strokeWidth={1.75} aria-hidden="true" />
               </button>
             </div>
             <div className="flex-1 overflow-y-auto">{renderNavContent(false)}</div>

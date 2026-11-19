@@ -2,13 +2,20 @@
 
 @layer base {
   :root {
-    --surface-canvas: #f6f6f6;
+    --surface-canvas: #fafafa;
     --surface-card: #ffffff;
-    --border-hairline: rgba(0, 0, 0, 0.075);
-    --border-subtle: rgba(0, 0, 0, 0.11);
-    --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.03), 0 8px 24px -8px rgba(0, 0, 0, 0.06);
-    --shadow-popover: 0 18px 42px -10px rgba(0, 0, 0, 0.13), 0 2px 8px -2px rgba(0, 0, 0, 0.05);
-    --shadow-pill: 0 2px 10px -2px rgba(0, 0, 0, 0.07), 0 1px 2px rgba(0, 0, 0, 0.04);
+    --surface-raised: #f4f4f5;
+    --border-hairline: rgba(0, 0, 0, 0.08);
+    --border-subtle: rgba(0, 0, 0, 0.12);
+    --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.03), 0 4px 12px rgba(0, 0, 0, 0.02);
+    --shadow-popover: 0 12px 28px -4px rgba(0, 0, 0, 0.12), 0 2px 8px -2px rgba(0, 0, 0, 0.04);
+
+    /* Icon System Tokens (bilioveloso/icon-system-skill) */
+    --icon-xs: 14px;
+    --icon-sm: 16px;
+    --icon-md: 20px;
+    --icon-lg: 24px;
+    --icon-xl: 32px;
   }
 
   body {
@@ -27,28 +34,57 @@
   }
 }
 
-.agenve2-card,
-.veto-card {
+.agenve2-card {
   background: var(--surface-card);
   border: 1px solid var(--border-hairline);
   box-shadow: var(--shadow-card);
+  transition: border-color 150ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.agenve2-popover,
-.veto-popover {
+.agenve2-popover {
   background: var(--surface-card);
   border: 1px solid var(--border-subtle);
   box-shadow: var(--shadow-popover);
 }
 
-.agenve2-pill,
-.veto-pill {
-  background: var(--surface-card);
-  border: 1px solid var(--border-hairline);
-  box-shadow: var(--shadow-pill);
+/* Icon System Skill: Optical Alignment & Sizing Utilities */
+.icon-xs {
+  width: var(--icon-xs);
+  height: var(--icon-xs);
+  flex-shrink: 0;
 }
 
-/* Quiet minimal scrollbars */
+.icon-sm {
+  width: var(--icon-sm);
+  height: var(--icon-sm);
+  flex-shrink: 0;
+}
+
+.icon-md {
+  width: var(--icon-md);
+  height: var(--icon-md);
+  flex-shrink: 0;
+}
+
+.icon-lg {
+  width: var(--icon-lg);
+  height: var(--icon-lg);
+  flex-shrink: 0;
+}
+
+.icon-optical {
+  position: relative;
+  top: 1px;
+  flex-shrink: 0;
+}
+
+.icon-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Minimal sleek scrollbars */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -60,7 +96,7 @@
 
 ::-webkit-scrollbar-thumb {
   background: rgba(0, 0, 0, 0.12);
-  border-radius: 999px;
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {

@@ -1,5 +1,16 @@
 import { motion } from "motion/react";
-import { ArrowRight, FlaskConical } from "lucide-react";
+import {
+  Activity,
+  ArrowRight,
+  Check,
+  CheckCircle2,
+  Clock,
+  Database,
+  FlaskConical,
+  Shield,
+  ShieldAlert,
+  Zap,
+} from "lucide-react";
 import type {
   AuditLogItem,
   FirewallStats,
@@ -46,135 +57,158 @@ export function OverviewPage({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 6 }}
+      initial={{ opacity: 0, y: 4 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -6 }}
+      exit={{ opacity: 0, y: -4 }}
       transition={SPRING_GENTLE}
       className="space-y-4"
     >
-      {/* Page Header */}
-      <div className="flex flex-wrap items-end justify-between gap-2">
-        <div>
-          <h1 className="text-[18px] font-semibold tracking-[-0.02em] text-neutral-900">
-            Overview
-          </h1>
-          <p className="mt-0.5 text-[12.5px] text-neutral-500">
-            Real-time tool call interception, approvals, and policy health.
-          </p>
+      {/* Quiet Status Bar — 16px radius, calm chrome */}
+      <section className="agenve2-card rounded-xl px-4 py-3.5">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <span
+              className={`h-2 w-2 rounded-full ${
+                killSwitch
+                  ? "bg-rose-500"
+                  : mode === "dry_run"
+                    ? "bg-amber-500"
+                    : "bg-emerald-500"
+              }`}
+            />
+            <div className="flex flex-wrap items-center gap-2 text-sm">
+              <span className="font-medium text-neutral-900">
+                {killSwitch
+                  ? "Firewall halted"
+                  : mode === "dry_run"
+                    ? "Dry-run active"
+                    : "Firewall enforcing"}
+              </span>
+              <span className="text-neutral-300">&middot;</span>
+              <span className="rounded-md bg-neutral-100 px-2 py-0.5 font-mono text-xs text-neutral-600">
+                policy.yaml
+              </span>
+              <span className="text-neutral-300">&middot;</span>
+              <span className="font-mono text-xs text-neutral-500 tabular-nums">
+                {stats.avg_latency_ms}ms avg
+              </span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => onNavigate("simulator")}
+              className="inline-flex items-center gap-1.5 rounded-lg bg-neutral-900 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-neutral-800 cursor-pointer"
+            >
+              <FlaskConical size={14} strokeWidth={1.75} aria-hidden="true" className="icon-optical" />
+              Simulator
+            </button>
+            <button
+              type="button"
+              onClick={() => onNavigate("plugins")}
+              className="rounded-lg border border-black/[0.08] bg-white px-3 py-1.5 text-xs font-medium text-neutral-700 transition-colors hover:bg-neutral-50 cursor-pointer"
+            >
+              {plugins.length} guards
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* Live Approval Queue Dock */}
+      {pending.length > 0 && (
+        <ApprovalDock pending={pending} onDecide={onDecideApproval} />
+      )}
+
+      {/* Metrics Grid — 4 compact cards sharing one height, numbers only */}
+      <section className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div className="agenve2-card rounded-xl p-4">
+          <div className="flex items-center justify-between text-xs text-neutral-500">
+            <span>Total calls</span>
+            <Activity size={16} strokeWidth={1.75} aria-hidden="true" className="text-neutral-400" />
+          </div>
+          <div className="mt-2 font-mono text-2xl font-medium text-neutral-900 tabular-nums">
+            {stats.total.toLocaleString()}
+          </div>
         </div>
 
-        <button
-          type="button"
-          onClick={() => onNavigate("timeline")}
-          className="inline-flex items-center gap-1 rounded-full bg-white px-3 py-1.5 text-[12px] font-medium text-neutral-600 ring-1 ring-black/[0.075] transition-colors hover:bg-neutral-50 hover:text-neutral-900 cursor-pointer"
-        >
-          Full timeline
-          <ArrowRight className="h-3.5 w-3.5 text-neutral-400" />
-        </button>
-      </div>
-
-      {/* Unified Hairline Metric Strip (refined GCP-style summary bar, zero chunky cards) */}
-      <section className="agenve2-card grid grid-cols-2 divide-y divide-black/[0.055] overflow-hidden rounded-[18px] sm:grid-cols-5 sm:divide-x sm:divide-y-0">
-        <div className="px-4 py-3.5">
-          <div className="text-[11.5px] font-medium text-neutral-400">
-            Total intercepted
+        <div className="agenve2-card rounded-xl p-4">
+          <div className="flex items-center justify-between text-xs text-neutral-500">
+            <span>Allowed</span>
+            <span className="h-2 w-2 rounded-full bg-emerald-500" />
           </div>
-          <div className="mt-1 font-mono text-[20px] font-semibold tracking-tight text-neutral-900">
-            {stats.total}
+          <div className="mt-2 font-mono text-2xl font-medium text-emerald-600 tabular-nums">
+            {stats.allowed.toLocaleString()}
           </div>
         </div>
 
-        <div className="px-4 py-3.5">
-          <div className="flex items-center gap-1.5 text-[11.5px] font-medium text-neutral-400">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-            Allowed
+        <div className="agenve2-card rounded-xl p-4">
+          <div className="flex items-center justify-between text-xs text-neutral-500">
+            <span>Blocked</span>
+            <span className="h-2 w-2 rounded-full bg-rose-500" />
           </div>
-          <div className="mt-1 font-mono text-[20px] font-semibold tracking-tight text-neutral-900">
-            {stats.allowed}
-          </div>
-        </div>
-
-        <div className="px-4 py-3.5">
-          <div className="flex items-center gap-1.5 text-[11.5px] font-medium text-neutral-400">
-            <span className="h-1.5 w-1.5 rounded-full bg-rose-500" />
-            Blocked / Denied
-          </div>
-          <div className="mt-1 font-mono text-[20px] font-semibold tracking-tight text-rose-600">
-            {stats.blocked}
+          <div className="mt-2 font-mono text-2xl font-medium text-rose-600 tabular-nums">
+            {stats.blocked.toLocaleString()}
           </div>
         </div>
 
         <button
           type="button"
           onClick={() => onNavigate("approvals")}
-          className="px-4 py-3.5 text-left transition-colors hover:bg-neutral-50/80 cursor-pointer"
+          className="agenve2-card rounded-xl p-4 text-left transition-colors hover:bg-neutral-50/70 cursor-pointer"
         >
-          <div className="flex items-center gap-1.5 text-[11.5px] font-medium text-neutral-400">
+          <div className="flex items-center justify-between text-xs text-neutral-500">
+            <span>Pending</span>
             <span
-              className={`h-1.5 w-1.5 rounded-full ${
-                pending.length > 0
-                  ? "bg-amber-500 animate-pulse"
-                  : "bg-neutral-300"
+              className={`h-2 w-2 rounded-full ${
+                pending.length > 0 ? "bg-amber-500" : "bg-neutral-300"
               }`}
             />
-            Waiting on you
           </div>
-          <div
-            className={`mt-1 font-mono text-[20px] font-semibold tracking-tight ${
-              pending.length > 0 ? "text-amber-600" : "text-neutral-900"
-            }`}
-          >
+          <div className="mt-2 font-mono text-2xl font-medium text-neutral-900 tabular-nums">
             {pending.length}
           </div>
         </button>
-
-        <div className="col-span-2 px-4 py-3.5 sm:col-span-1">
-          <div className="text-[11.5px] font-medium text-neutral-400">
-            Avg latency
-          </div>
-          <div className="mt-1 font-mono text-[20px] font-semibold tracking-tight text-neutral-900">
-            {stats.avg_latency_ms}
-            <span className="ml-0.5 text-[12px] font-normal text-neutral-400">
-              ms
-            </span>
-          </div>
-        </div>
       </section>
 
-      {/* Active Pending Approvals (appears cleanly at top if any agent is paused) */}
-      <ApprovalDock pending={pending} onDecide={onDecideApproval} />
-
-      {/* Quick Dry-Run Test Strip */}
-      <section className="agenve2-card flex flex-wrap items-center justify-between gap-3 rounded-[18px] px-4 py-3">
-        <div className="flex items-center gap-2 text-[12.5px] font-medium text-neutral-700">
-          <FlaskConical className="h-3.5 w-3.5 text-blue-600" />
-          <span>Quick dry-run test</span>
+      {/* Quick Test Presets — 8px nested radius buttons */}
+      <section className="agenve2-card rounded-xl p-4">
+        <div className="flex items-center justify-between pb-3">
+          <span className="text-sm font-medium text-neutral-900">
+            Quick test presets
+          </span>
+          <span className="text-xs text-neutral-400">
+            Click to run in simulator
+          </span>
         </div>
 
-        <div className="flex flex-wrap items-center gap-1.5">
-          {QUICK_TESTS.map((qt) => {
+        <div className="flex flex-wrap gap-2">
+          {QUICK_TESTS.map((test) => {
             const dotColor =
-              qt.tone === "safe"
+              test.tone === "safe"
                 ? "bg-emerald-500"
-                : qt.tone === "warn"
+                : test.tone === "warn"
                   ? "bg-amber-500"
                   : "bg-rose-500";
             return (
               <button
-                key={qt.label}
+                key={test.label}
                 type="button"
-                onClick={() => onQuickSimulate(qt.tool, qt.args)}
-                className="inline-flex items-center gap-1.5 rounded-full border border-black/[0.075] bg-neutral-50/70 px-2.5 py-1 text-[11.5px] font-medium text-neutral-600 transition-colors hover:border-blue-300 hover:bg-blue-50/60 hover:text-blue-700 cursor-pointer"
+                onClick={() => onQuickSimulate(test.tool, test.args)}
+                className="group inline-flex items-center gap-2 rounded-lg border border-black/[0.08] bg-white px-3 py-1.5 text-xs transition-colors hover:border-black/[0.16] hover:bg-neutral-50 cursor-pointer"
               >
                 <span className={`h-1.5 w-1.5 rounded-full ${dotColor}`} />
-                {qt.label}
+                <span className="font-medium text-neutral-800">{test.label}</span>
+                <span className="font-mono text-xs text-neutral-400 group-hover:text-neutral-600">
+                  {test.tool}
+                </span>
               </button>
             );
           })}
         </div>
       </section>
 
-      {/* Recent Execution Timeline Rail */}
+      {/* Execution Timeline */}
       <TimelineCard
         logs={recentLogs}
         stats={stats}
@@ -183,12 +217,12 @@ export function OverviewPage({
         killSwitch={killSwitch}
         mode={mode}
         filterDecision="ALL"
-        onFilterChange={() => onNavigate("timeline")}
+        onFilterChange={() => {}}
         searchText=""
-        onSearchChange={() => onNavigate("timeline")}
+        onSearchChange={() => {}}
         onRetestInSimulator={onRetestInSimulator}
         onCopyHash={onCopyHash}
-        compact
+        compact={true}
         onViewAll={() => onNavigate("timeline")}
       />
     </motion.div>

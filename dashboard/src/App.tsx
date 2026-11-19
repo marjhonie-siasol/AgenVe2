@@ -29,6 +29,7 @@ import {
 import { PolicyView } from "./components/PolicyView";
 import { PluginsPage } from "./components/PluginsPage";
 import { ApprovalDock } from "./components/ApprovalDock";
+import logoUrl from "./assets/agenve2.logo.png";
 
 interface ToastNotice {
   id: number;
@@ -358,18 +359,18 @@ export default function App() {
     pending.length > 0 && section !== "overview" && section !== "approvals";
 
   return (
-    <div className="min-h-screen bg-[#F6F6F6] text-[#171717]">
-      {/* Full-Width Google Cloud Console-style Top Utility Header (48px) */}
-      <header className="sticky top-0 z-30 flex h-12 items-center justify-between gap-3 border-b border-black/[0.075] bg-white px-3.5">
-        {/* Left: Sidebar Toggle + Brand + Active Policy Context Chip */}
-        <div className="flex min-w-0 items-center gap-2.5">
+    <div className="min-h-screen bg-[#FAFAFA] text-[#171717]">
+      {/* Top Console Bar (56px) — Quiet chrome, hairline border */}
+      <header className="sticky top-0 z-40 flex h-14 items-center justify-between gap-4 border-b border-black/[0.08] bg-white px-4 sm:px-6">
+        {/* Left: Sidebar Toggle + Brand + Active Policy Context */}
+        <div className="flex min-w-0 items-center gap-3">
           <button
             type="button"
             onClick={() => setMobileMenuOpen(true)}
             aria-label="Open navigation menu"
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900 md:hidden cursor-pointer"
+            className="flex h-8 w-8 items-center justify-center rounded-lg text-neutral-500 hover:bg-neutral-100 md:hidden cursor-pointer"
           >
-            <Menu className="h-4 w-4" />
+            <Menu size={18} strokeWidth={1.75} aria-hidden="true" />
           </button>
 
           <button
@@ -377,37 +378,37 @@ export default function App() {
             onClick={() => setSidebarCollapsed((v) => !v)}
             title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
             aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-            className="hidden h-8 w-8 items-center justify-center rounded-lg text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900 md:flex cursor-pointer"
+            className="hidden h-8 w-8 items-center justify-center rounded-lg text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-700 md:flex cursor-pointer"
           >
-            <PanelLeft className="h-4 w-4" />
+            <PanelLeft size={18} strokeWidth={1.75} aria-hidden="true" />
           </button>
 
           <button
             type="button"
             onClick={() => setSection("overview")}
-            className="flex items-center gap-2 cursor-pointer"
+            className="flex items-center gap-2.5 cursor-pointer"
           >
             <img
-              src="/agenve2.logo.png"
+              src={logoUrl}
               alt="AgenVe2"
-              className="h-7 w-7 rounded-lg object-contain"
+              className="h-6 w-6 rounded-md object-contain"
             />
-            <span className="text-[14.5px] font-semibold tracking-[-0.02em] text-neutral-900">
+            <span className="text-sm font-semibold tracking-tight text-neutral-900">
               AgenVe2
             </span>
           </button>
 
-          <span className="hidden h-4 w-[1px] bg-black/[0.08] sm:block" />
+          <span className="hidden h-4 w-[1px] bg-black/[0.08] sm:block mx-0.5" />
 
-          {/* Policy Context Pill (GCP Project Picker equivalent) */}
+          {/* Policy Context Tag */}
           <button
             type="button"
             onClick={() => setSection("policy")}
-            title="Edit active policy YAML"
-            className="hidden items-center gap-1.5 rounded-lg border border-black/[0.075] bg-[#FAFAFA] px-2.5 py-1 text-[12px] text-neutral-600 transition-colors hover:border-black/[0.14] hover:bg-white hover:text-neutral-900 sm:inline-flex cursor-pointer"
+            title="Edit policy"
+            className="hidden items-center gap-1.5 rounded-md border border-black/[0.08] bg-white px-2 py-1 text-xs text-neutral-600 transition-colors hover:border-black/[0.16] hover:text-neutral-900 sm:inline-flex cursor-pointer"
           >
-            <FileCode2 className="h-3.5 w-3.5 text-neutral-400" />
-            <span className="max-w-[180px] truncate font-mono text-[11.5px]">
+            <FileCode2 size={14} strokeWidth={1.75} aria-hidden="true" className="icon-optical text-neutral-400" />
+            <span className="max-w-[160px] truncate font-mono">
               {policyPath}
             </span>
           </button>
@@ -415,7 +416,8 @@ export default function App() {
 
         {/* Right: Mode Switch · Verify Chain · Kill Switch */}
         <div className="flex shrink-0 items-center gap-2">
-          <div className="hidden items-center rounded-full bg-neutral-100/90 p-0.5 ring-1 ring-black/[0.06] sm:flex">
+          {/* Segmented Mode Control — 8px outer radius, 6px inner pill */}
+          <div className="hidden items-center rounded-lg bg-neutral-100 p-0.5 sm:flex">
             {(["enforce", "dry_run"] as const).map((m) => {
               const active = mode === m;
               return (
@@ -423,22 +425,22 @@ export default function App() {
                   key={m}
                   type="button"
                   onClick={() => setFirewallMode(m)}
-                  className={`relative rounded-full px-2.5 py-0.5 text-[11.5px] font-medium transition-colors cursor-pointer ${
+                  className={`relative rounded-md px-2.5 py-1 text-xs font-medium transition-colors cursor-pointer ${
                     active
                       ? m === "dry_run"
                         ? "text-amber-800"
                         : "text-neutral-900"
-                      : "text-neutral-400 hover:text-neutral-700"
+                      : "text-neutral-500 hover:text-neutral-800"
                   }`}
                 >
                   {active && (
                     <motion.span
                       layoutId="top-mode-pill"
                       transition={SPRING_SNAPPY}
-                      className={`absolute inset-0 rounded-full ${
+                      className={`absolute inset-0 rounded-md ${
                         m === "dry_run"
-                          ? "bg-amber-50 ring-1 ring-amber-200/80"
-                          : "bg-white shadow-2xs ring-1 ring-black/[0.06]"
+                          ? "bg-amber-50 ring-1 ring-amber-200"
+                          : "bg-white shadow-xs"
                       }`}
                     />
                   )}
@@ -453,39 +455,39 @@ export default function App() {
           <button
             type="button"
             onClick={verifyAuditChain}
-            className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1 text-[12px] font-medium text-neutral-600 ring-1 ring-black/[0.08] transition-colors hover:bg-neutral-50 hover:text-neutral-900 cursor-pointer"
+            title="Verify SHA-256 chain"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-black/[0.08] bg-white px-2.5 py-1 text-xs font-medium text-neutral-700 transition-colors hover:bg-neutral-50 cursor-pointer"
           >
-            <Lock className="h-3.5 w-3.5 text-neutral-400" />
+            <Lock size={14} strokeWidth={1.75} aria-hidden="true" className="icon-optical text-neutral-400" />
             <span className="hidden sm:inline">Verify chain</span>
           </button>
 
-          <motion.button
+          <button
             type="button"
-            whileTap={{ scale: 0.96 }}
             onClick={toggleKillSwitch}
-            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[12px] font-medium transition-all cursor-pointer ${
+            className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-medium transition-colors cursor-pointer ${
               killSwitch
-                ? "bg-rose-600 text-white shadow-xs hover:bg-rose-700"
-                : "bg-white text-rose-600 ring-1 ring-rose-200 hover:bg-rose-50"
+                ? "bg-rose-600 text-white hover:bg-rose-700"
+                : "border border-rose-200 bg-white text-rose-600 hover:bg-rose-50"
             }`}
           >
             {killSwitch ? (
               <>
-                <ShieldAlert className="h-3.5 w-3.5" />
-                <span>Halted &middot; Resume</span>
+                <ShieldAlert size={14} strokeWidth={1.75} aria-hidden="true" className="icon-optical" />
+                <span>Resume</span>
               </>
             ) : (
               <>
-                <Power className="h-3.5 w-3.5" />
+                <Power size={14} strokeWidth={1.75} aria-hidden="true" className="icon-optical" />
                 <span>Kill switch</span>
               </>
             )}
-          </motion.button>
+          </button>
         </div>
       </header>
 
       {/* Main Console Shell: Collapsible Sidebar + Content Workspace */}
-      <div className="flex min-h-[calc(100vh-3rem)]">
+      <div className="flex min-h-[calc(100vh-4rem)]">
         <Sidebar
           active={section}
           collapsed={sidebarCollapsed}
@@ -498,8 +500,12 @@ export default function App() {
           onCloseMobile={() => setMobileMenuOpen(false)}
         />
 
-        <main className="relative flex-1 overflow-x-hidden px-4 py-6 sm:px-7">
-          <div className="mx-auto max-w-[980px] pb-24">
+        <main
+          className={`relative flex-1 overflow-x-hidden px-4 py-5 sm:px-8 transition-[margin] duration-200 ease-out ${
+            sidebarCollapsed ? "md:ml-[60px]" : "md:ml-[210px]"
+          }`}
+        >
+          <div className="mx-auto max-w-[1060px] pb-20">
             <AnimatePresence mode="wait">
               {section === "overview" && (
                 <OverviewPage
@@ -527,18 +533,7 @@ export default function App() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -6 }}
                   transition={SPRING_GENTLE}
-                  className="space-y-4"
                 >
-                  <div>
-                    <h1 className="text-[18px] font-semibold tracking-[-0.02em] text-neutral-900">
-                      Execution timeline
-                    </h1>
-                    <p className="mt-0.5 text-[12.5px] text-neutral-500">
-                      Tamper-evident audit rail of every intercepted agent tool
-                      call. Click any node to inspect arguments or re-test.
-                    </p>
-                  </div>
-
                   <TimelineCard
                     logs={filteredLogs}
                     stats={stats}
@@ -630,7 +625,7 @@ export default function App() {
                   className="agenve2-pill pointer-events-auto inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-[12px]"
                 >
                   {toast.tone === "ok" ? (
-                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
+                    <CheckCircle2 size={16} strokeWidth={1.75} aria-hidden="true" className="icon-optical text-emerald-600" />
                   ) : toast.tone === "warn" ? (
                     <span className="h-2 w-2 rounded-full bg-amber-500" />
                   ) : (
@@ -648,7 +643,7 @@ export default function App() {
                     aria-label="Dismiss notice"
                     className="ml-1 text-neutral-300 hover:text-neutral-600 cursor-pointer"
                   >
-                    <X className="h-3 w-3" />
+                    <X size={14} strokeWidth={1.75} aria-hidden="true" />
                   </button>
                 </motion.div>
               )}

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { ChevronDown, ChevronUp, MessageSquare } from "lucide-react";
+import { AlertCircle, ChevronDown, ChevronUp, MessageSquare } from "lucide-react";
 import type { PendingApproval } from "../types";
 import { SPRING_GENTLE, SPRING_SNAPPY, summarizeArgs } from "../utils";
 
@@ -47,11 +47,11 @@ function ApprovalTicketRow({
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, y: 6 }}
+      initial={{ opacity: 0, y: 4 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+      exit={{ opacity: 0, height: 0 }}
       transition={SPRING_SNAPPY}
-      className="border-t border-black/[0.055] first:border-t-0"
+      className="border-t border-black/[0.08] first:border-t-0 bg-white"
     >
       <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-2.5">
         <button
@@ -59,24 +59,24 @@ function ApprovalTicketRow({
           onClick={() => setExpanded((v) => !v)}
           className="flex min-w-0 flex-1 items-center gap-2.5 text-left cursor-pointer"
         >
-          <span className="h-2 w-2 shrink-0 rounded-full bg-amber-500 ring-3 ring-amber-100" />
-          <span className="font-mono text-[12.5px] font-semibold text-neutral-900">
+          <span className="h-2 w-2 shrink-0 rounded-full bg-amber-500" />
+          <span className="font-mono text-xs font-medium text-neutral-900">
             {ticket.tool_name}
           </span>
           {preview && (
-            <span className="truncate font-mono text-[12px] text-neutral-500">
+            <span className="truncate font-mono text-xs text-neutral-500">
               {preview}
             </span>
           )}
-          <span className="hidden text-[11.5px] text-neutral-400 sm:inline">
+          <span className="hidden text-xs text-neutral-400 sm:inline">
             &middot; {ticket.agent_name}
           </span>
         </button>
 
         <div className="flex shrink-0 items-center gap-2">
           <span
-            className={`font-mono text-[11.5px] ${
-              remaining <= 15 ? "font-medium text-rose-600" : "text-neutral-400"
+            className={`font-mono text-xs tabular-nums ${
+              remaining <= 15 ? "text-rose-600 font-medium" : "text-neutral-400"
             }`}
           >
             {remaining}s
@@ -86,7 +86,7 @@ function ApprovalTicketRow({
             type="button"
             disabled={busy}
             onClick={() => submit(false)}
-            className="rounded-lg border border-black/[0.09] bg-white px-2.5 py-1 text-[12px] font-medium text-neutral-700 transition-colors hover:bg-neutral-100 disabled:opacity-50 cursor-pointer"
+            className="rounded-lg border border-black/[0.08] bg-white px-3 py-1 text-xs font-medium text-neutral-700 transition-colors hover:bg-neutral-50 disabled:opacity-50 cursor-pointer"
           >
             Deny
           </button>
@@ -95,7 +95,7 @@ function ApprovalTicketRow({
             type="button"
             disabled={busy}
             onClick={() => submit(true)}
-            className="rounded-lg bg-blue-50 px-2.5 py-1 text-[12px] font-medium text-blue-600 transition-colors hover:bg-blue-100 disabled:opacity-50 cursor-pointer"
+            className="rounded-lg bg-[#2563EB] px-3 py-1 text-xs font-medium text-white transition-colors hover:bg-blue-700 disabled:opacity-50 cursor-pointer"
           >
             Allow
           </button>
@@ -111,18 +111,18 @@ function ApprovalTicketRow({
             transition={SPRING_GENTLE}
             className="overflow-hidden px-4 pb-3"
           >
-            <div className="rounded-xl border border-black/[0.06] bg-[#FAFAFA] p-3">
+            <div className="rounded-lg border border-black/[0.08] bg-[#FAFAFA] p-3">
               {ticket.message && (
-                <p className="text-[12px] text-neutral-600">{ticket.message}</p>
+                <p className="text-xs text-neutral-600 mb-2">{ticket.message}</p>
               )}
 
-              <pre className="mt-2 max-h-36 overflow-auto rounded-lg border border-black/[0.06] bg-white px-3 py-2 font-mono text-[11.5px] leading-relaxed text-neutral-800">
+              <pre className="max-h-36 overflow-auto rounded-md border border-black/[0.06] bg-white px-3 py-2 font-mono text-xs leading-relaxed text-neutral-800">
                 {JSON.stringify(ticket.arguments, null, 2)}
               </pre>
 
               <div className="mt-2.5 flex items-center gap-2">
                 <div className="relative flex-1">
-                  <MessageSquare className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-neutral-400" />
+                  <MessageSquare size={14} strokeWidth={1.75} aria-hidden="true" className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-neutral-400" />
                   <input
                     type="text"
                     value={feedback}
@@ -133,12 +133,12 @@ function ApprovalTicketRow({
                         submit(false);
                       }
                     }}
-                    placeholder="Optional note sent back to the AI agent (e.g. post in #dev-test instead)..."
-                    className="w-full rounded-lg border border-black/[0.08] bg-white pl-8 pr-3 py-1.5 text-[12px] text-neutral-800 placeholder:text-neutral-400 focus:border-blue-500/40 focus:outline-none focus:ring-2 focus:ring-blue-500/10"
+                    placeholder="Note for agent (optional)..."
+                    className="h-8 w-full rounded-lg border border-black/[0.08] bg-white pl-8 pr-3 text-xs text-neutral-800 placeholder:text-neutral-400 focus:border-blue-500/40 focus:outline-none focus:ring-1 focus:ring-blue-500/20"
                   />
                 </div>
-                <span className="hidden font-mono text-[10.5px] text-neutral-400 sm:inline">
-                  {ticket.id}
+                <span className="hidden font-mono text-xs text-neutral-400 sm:inline tabular-nums">
+                  {ticket.id.slice(0, 8)}
                 </span>
               </div>
             </div>
@@ -162,32 +162,29 @@ export function ApprovalDock({ pending, onDecide }: ApprovalDockProps) {
       {pending.length > 0 && (
         <motion.div
           key="approval-dock"
-          initial={{ opacity: 0, y: 12, scale: 0.985 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: 10, scale: 0.985 }}
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 4 }}
           transition={SPRING_SNAPPY}
-          className="agenve2-card overflow-hidden rounded-[18px] border-amber-300/60"
+          className="agenve2-card overflow-hidden rounded-xl border border-amber-200"
         >
-          {/* Header mimicking 3.design.mp4: "1 waiting on you" */}
+          {/* Header */}
           <button
             type="button"
             onClick={() => setCollapsed((v) => !v)}
-            className="flex w-full items-center justify-between bg-amber-50/45 px-4 py-2 text-left transition-colors hover:bg-amber-50/70 cursor-pointer"
+            className="flex w-full items-center justify-between bg-amber-50/60 px-4 py-2.5 text-left transition-colors hover:bg-amber-50/90 cursor-pointer"
           >
             <div className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
-              <span className="text-[12.5px] font-semibold text-neutral-900">
-                {pending.length} {pending.length === 1 ? "approval" : "approvals"}
-              </span>
-              <span className="text-[12.5px] text-amber-700">
-                {pending.length} waiting on you
+              <span className="h-2 w-2 rounded-full bg-amber-500" />
+              <span className="text-xs font-medium text-neutral-900">
+                {pending.length} {pending.length === 1 ? "call" : "calls"} waiting on you
               </span>
             </div>
             <span className="text-neutral-400">
               {collapsed ? (
-                <ChevronUp className="h-4 w-4" />
+                <ChevronUp size={16} strokeWidth={1.75} aria-hidden="true" />
               ) : (
-                <ChevronDown className="h-4 w-4" />
+                <ChevronDown size={16} strokeWidth={1.75} aria-hidden="true" />
               )}
             </span>
           </button>
@@ -201,16 +198,14 @@ export function ApprovalDock({ pending, onDecide }: ApprovalDockProps) {
                 transition={SPRING_GENTLE}
                 className="overflow-hidden"
               >
-                <AnimatePresence initial={false}>
-                  {pending.map((ticket, index) => (
-                    <ApprovalTicketRow
-                      key={ticket.id}
-                      ticket={ticket}
-                      defaultOpen={index === 0}
-                      onDecide={onDecide}
-                    />
-                  ))}
-                </AnimatePresence>
+                {pending.map((ticket, index) => (
+                  <ApprovalTicketRow
+                    key={ticket.id}
+                    ticket={ticket}
+                    defaultOpen={index === 0}
+                    onDecide={onDecide}
+                  />
+                ))}
               </motion.div>
             )}
           </AnimatePresence>
