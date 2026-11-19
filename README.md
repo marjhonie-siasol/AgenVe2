@@ -152,32 +152,40 @@ Wrap any MCP server binary in your client configuration (`mcp.json`):
 }
 ```
 
-### Option B: Multi-Agent Framework Middleware (AG2 / AutoGen)
-Intercept agent tool calls with zero monkey-patching:
+### Option B: Python Function Decorator SDK (`@veto.guard`)
+Protect standalone Python functions or agent tools with a single decorator:
 
 ```python
-from ag2 import Agent
-from ag2.middleware import Middleware
 from veto import VetoClient
-from veto.ag2 import VetoAG2Middleware
 
-veto = VetoClient(policy="policy.yaml")
+veto = VetoClient(policy="./policy.yaml")
 
-agent = Agent(name="data-engineer")
-agent.add_middleware(Middleware(VetoAG2Middleware))
-```
-*(See `examples/ag2_veto_demo.py` for a complete runnable demonstration.)*
-
-### Option C: Python Function Decorator SDK
-Protect standalone Python functions with a single decorator:
-
-```python
-from veto import guard
-
-@guard(policy="./policy.yaml")
+@veto.guard("postgres_query")
 def execute_database_query(query: str) -> list:
     return db.execute(query).fetchall()
 ```
+
+### Option C: Universal Agent Loop / Framework Middleware
+Integrate into any custom agent loop, LangChain, CrewAI, AutoGen, LlamaIndex, or raw LLM function calling:
+
+```python
+from veto import VetoClient
+
+veto = VetoClient(policy="./policy.yaml")
+
+# Evaluate tool call before executing
+decision = veto.evaluate(
+    tool_name=tool_call.name,
+    arguments=tool_call.arguments,
+)
+
+if decision["effective_decision"] == "BLOCK":
+    return f"Security Error: {decision['reason']}"
+
+# Safe to execute tool
+return run_tool(tool_call)
+```
+*(See `examples/quickstart_demo.py` for a complete runnable demonstration.)*
 
 ---
 

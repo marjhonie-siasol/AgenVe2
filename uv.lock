@@ -9,22 +9,6 @@ resolution-markers = [
 ]
 
 [[package]]
-name = "ag2"
-version = "1.3.2"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "anyio" },
-    { name = "fast-depends", extra = ["pydantic"] },
-    { name = "httpx" },
-    { name = "pydantic" },
-    { name = "pyyaml" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/c7/74/ec72fa70a037dbb2e96661a56d64d6bf09183674425dbffbbbd800be1e55/ag2-1.3.2.tar.gz", hash = "sha256:59c6981dc9bee007596164e0e49ba5f6d130997e04f150a0f48fc98f749be6c8", size = 1055213, upload-time = "2026-11-15T16:38:43.782Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/5a/9f/4c71930f7b92150cc10f4d3b17034e0c7d2f02646bdc67db817091887818/ag2-1.3.2-py3-none-any.whl", hash = "sha256:5f7d3255981c7eb2cdeebe18f27197b6a3d20ebdaf8de3a6e9ab1df1c0a6d168", size = 1340967, upload-time = "2026-11-15T16:38:41.893Z" },
-]
-
-[[package]]
 name = "aiohappyeyeballs"
 version = "2.7.1"
 source = { registry = "https://pypi.org/simple" }
@@ -575,24 +559,6 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/b0/5d/5f8571bd5dedc80863191621ac4be001f3f3dd8315d2ec078705dab7dec1/durationpy-0.11.tar.gz", hash = "sha256:181898e1ae282e288f0a2291829656bf1b6b3aadf30a97993b85db4943642905", size = 3582, upload-time = "2026-08-26T13:56:00.991Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/e6/c4/ebdf7837bc4ef6fd98cfb013c28855bb358467bf86c1af011bbc21e21df0/durationpy-0.11-py3-none-any.whl", hash = "sha256:a739fe2b8972c250ff72f8e2c488d18cf25f7b852f49ee76048775d5171df30c", size = 4133, upload-time = "2026-08-26T13:55:59.456Z" },
-]
-
-[[package]]
-name = "fast-depends"
-version = "3.0.11"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "anyio" },
-    { name = "typing-extensions" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/fc/09/f133c54cc221cd667842f3804d1d84f911d2425bc09a8f224be9cc7ac3be/fast_depends-3.0.11.tar.gz", hash = "sha256:fd609ce6cefbc45258403be93af78225a17f72800207aa88825fff763c33796a", size = 19804, upload-time = "2026-11-03T19:09:17.279Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/5c/c7/4e262d4082881cd4b5209a9ba5c7ef3937b65d9357d00640b7ab63b1976b/fast_depends-3.0.11-py3-none-any.whl", hash = "sha256:5c6f2f448e013d7f6555ba1cff27d4c913a4954675631183b48f57411b5566a1", size = 25544, upload-time = "2026-11-03T19:09:15.683Z" },
-]
-
-[package.optional-dependencies]
-pydantic = [
-    { name = "pydantic" },
 ]
 
 [[package]]
@@ -2988,7 +2954,6 @@ name = "veto-firewall"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
-    { name = "ag2" },
     { name = "cachetools" },
     { name = "fastapi" },
     { name = "httpx" },
@@ -3015,7 +2980,6 @@ ml = [
 
 [package.metadata]
 requires-dist = [
-    { name = "ag2", specifier = ">=1.3.2" },
     { name = "cachetools", specifier = ">=5.5.0" },
     { name = "chromadb", marker = "extra == 'ml'", specifier = ">=0.5.0" },
     { name = "fastapi", specifier = ">=0.115.0" },
