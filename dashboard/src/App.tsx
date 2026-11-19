@@ -7,7 +7,6 @@ import {
   Menu,
   PanelLeft,
   Power,
-  Shield,
   ShieldAlert,
   X,
 } from "lucide-react";
@@ -388,10 +387,12 @@ export default function App() {
             onClick={() => setSection("overview")}
             className="flex items-center gap-2 cursor-pointer"
           >
-            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-neutral-900 text-white">
-              <Shield className="h-3.5 w-3.5 stroke-[2.2]" />
-            </span>
-            <span className="text-[14px] font-semibold tracking-[-0.02em] text-neutral-900">
+            <img
+              src="/veto.logo.png"
+              alt="Veto"
+              className="h-7 w-7 rounded-lg object-contain"
+            />
+            <span className="text-[14.5px] font-semibold tracking-[-0.02em] text-neutral-900">
               Veto
             </span>
           </button>

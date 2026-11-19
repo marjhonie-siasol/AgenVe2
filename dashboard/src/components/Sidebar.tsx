@@ -244,7 +244,11 @@ export function Sidebar({
           <aside className="relative z-10 flex w-[248px] flex-col border-r border-black/[0.08] bg-white shadow-xl">
             <div className="flex h-12 items-center justify-between border-b border-black/[0.06] px-4">
               <div className="flex items-center gap-2">
-                <Shield className="h-4 w-4 text-neutral-900" />
+                <img
+                  src="/veto.logo.png"
+                  alt="Veto"
+                  className="h-6 w-6 rounded-md object-contain"
+                />
                 <span className="text-[14px] font-semibold tracking-[-0.015em]">
                   Veto
                 </span>
