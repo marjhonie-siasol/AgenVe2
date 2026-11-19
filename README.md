@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/agenve2.logo.png" alt="AgenVe2 Logo" width="180" />
+  <img src="assets/logo.png" alt="AgenVe2 Logo" width="180" />
 </p>
 
 <h1 align="center">AgenVe2</h1>
