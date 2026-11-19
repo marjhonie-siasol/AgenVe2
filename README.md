@@ -1,12 +1,12 @@
 <p align="left">
-  <img src="assets/veto.logo.png" alt="Veto Logo" width="64" />
+  <img src="assets/agenve2.logo.png" alt="AgenVe2 Logo" width="64" />
 </p>
 
-# Veto: AI Agent Execution Firewall
+# AgenVe2: AI Agent Execution Firewall
 
 Deterministic, policy-as-code runtime security for autonomous AI models, coding agents, and multi-agent workflows.
 
-Veto intercepts and evaluates tool calls in sub-3ms latency using native Abstract Syntax Tree (AST) parsing before destructive operations touch databases, filesystems, shell processes, or external APIs.
+AgenVe2 intercepts and evaluates tool calls in sub-3ms latency using native Abstract Syntax Tree (AST) parsing before destructive operations touch databases, filesystems, shell processes, or external APIs.
 
 ---
 
@@ -14,7 +14,7 @@ Veto intercepts and evaluates tool calls in sub-3ms latency using native Abstrac
 
 Modern AI agents are equipped with execution tools: database drivers, terminal sessions, filesystem handles, and API integrations. While foundation models provide reasoning capabilities, they are probabilistic and lack execution boundaries.
 
-Existing safety solutions focus on prompt inspection (evaluating conversational text before it reaches the model). **Veto operates at the execution layer** (evaluating system actions before they reach the infrastructure).
+Existing safety solutions focus on prompt inspection (evaluating conversational text before it reaches the model). **AgenVe2 operates at the execution layer** (evaluating system actions before they reach the infrastructure).
 
 ```
 [ User / Trigger ]
@@ -24,7 +24,7 @@ Existing safety solutions focus on prompt inspection (evaluating conversational 
        │
        ▼ Tool Call Request (JSON-RPC / Function Arguments)
 ╔════════════════════════════════════════════════════════════════════════╗
-║                        VETO EXECUTION FIREWALL                         ║
+║                        AGENVE2 EXECUTION FIREWALL                         ║
 ║  • Latency: < 3 ms per evaluation (In-Memory, Deterministic)           ║
 ║  • No LLM Required: C-accelerated AST parsers, regex tokenizers        ║
 ║  • Decision Engine: ALLOW | BLOCK | REQUIRE_APPROVAL                   ║
@@ -45,9 +45,9 @@ Existing safety solutions focus on prompt inspection (evaluating conversational 
 
 ---
 
-## Where Veto Is Used
+## Where AgenVe2 Is Used
 
-Veto is designed for environments where autonomous agents interact with critical tools and real-world side effects.
+AgenVe2 is designed for environments where autonomous agents interact with critical tools and real-world side effects.
 
 ### 1. Autonomous Coding Agents & Developer Workflows
 * **Target Platforms:** Antigravity IDE, Claude Code, Cursor, Aider, OpenHands.
@@ -97,7 +97,7 @@ Veto is designed for environments where autonomous agents interact with critical
 
 ## Architecture and Core Plugins
 
-Veto uses a modular microkernel architecture with a pipes-and-filters execution pipeline:
+AgenVe2 uses a modular microkernel architecture with a pipes-and-filters execution pipeline:
 
 ```mermaid
 flowchart LR
@@ -136,7 +136,7 @@ flowchart LR
 
 ## Integration Modes
 
-Veto integrates at multiple layers of the application stack:
+AgenVe2 integrates at multiple layers of the application stack:
 
 ### Option A: Model Context Protocol (MCP) Stdio Proxy
 Wrap any MCP server binary in your client configuration (`mcp.json`):
@@ -145,22 +145,22 @@ Wrap any MCP server binary in your client configuration (`mcp.json`):
 {
   "mcpServers": {
     "secure-postgres": {
-      "command": "veto",
+      "command": "agenve2",
       "args": ["proxy", "--policy", "./policy.yaml", "--", "npx", "@modelcontextprotocol/server-postgres"]
     }
   }
 }
 ```
 
-### Option B: Python Function Decorator SDK (`@veto.guard`)
+### Option B: Python Function Decorator SDK (`@agenve2.guard`)
 Protect standalone Python functions or agent tools with a single decorator:
 
 ```python
-from veto import VetoClient
+from agenve2 import AgenVe2Client
 
-veto = VetoClient(policy="./policy.yaml")
+agenve2 = AgenVe2Client(policy="./policy.yaml")
 
-@veto.guard("postgres_query")
+@agenve2.guard("postgres_query")
 def execute_database_query(query: str) -> list:
     return db.execute(query).fetchall()
 ```
@@ -169,12 +169,12 @@ def execute_database_query(query: str) -> list:
 Integrate into any custom agent loop, LangChain, CrewAI, AutoGen, LlamaIndex, or raw LLM function calling:
 
 ```python
-from veto import VetoClient
+from agenve2 import AgenVe2Client
 
-veto = VetoClient(policy="./policy.yaml")
+agenve2 = AgenVe2Client(policy="./policy.yaml")
 
 # Evaluate tool call before executing
-decision = veto.evaluate(
+decision = agenve2.evaluate(
     tool_name=tool_call.name,
     arguments=tool_call.arguments,
 )
@@ -202,7 +202,7 @@ uv sync --dev
 Generate a starter policy:
 
 ```bash
-uv run veto init --preset standard
+uv run agenve2 init --preset standard
 ```
 
 This creates a declarative `policy.yaml` file:
@@ -247,10 +247,10 @@ rules:
             max: 100.0
 ```
 
-### 3. Start the Veto Daemon and Dashboard
+### 3. Start the AgenVe2 Daemon and Dashboard
 
 ```bash
-uv run veto start --policy policy.yaml
+uv run agenve2 start --policy policy.yaml
 ```
 
 The daemon starts the evaluation gateway and serves the web console at `http://localhost:8080`.
@@ -259,7 +259,7 @@ The daemon starts the evaluation gateway and serves the web console at `http://l
 
 ## Web Console and Management Dashboard
 
-The Veto management console provides operational visibility and runtime control:
+The AgenVe2 management console provides operational visibility and runtime control:
 
 * **Execution Timeline:** Real-time event stream tracking every tool evaluation, latency measurement, and policy match.
 * **Approval Dock:** Asynchronous review queue for actions flagged as `require_approval`. Operators can inspect full JSON payloads and choose **Approve**, **Deny**, or **Deny with Feedback**.
@@ -273,16 +273,16 @@ The Veto management console provides operational visibility and runtime control:
 
 | Command | Description |
 | :--- | :--- |
-| `veto init` | Initialize a starter `policy.yaml` (`--preset strict\|standard\|permissive`) |
-| `veto start` | Launch the evaluation daemon and web console |
-| `veto start --dry-run` | Shadow mode: evaluates and logs policy matches without blocking execution |
-| `veto proxy -- <command>` | Transparently proxy standard I/O for MCP servers |
-| `veto eval --tool <name> --args '<json>'` | Evaluate an individual tool call payload against policy |
-| `veto check` | Validate `policy.yaml` syntax and rule configurations |
-| `veto logs --blocked` | Query recent blocked execution attempts from the audit store |
-| `veto audit verify` | Verify cryptographic hash integrity of stored audit records |
-| `veto kill` | Activate the global kill switch |
-| `veto kill --unlock` | Deactivate the global kill switch |
+| `agenve2 init` | Initialize a starter `policy.yaml` (`--preset strict\|standard\|permissive`) |
+| `agenve2 start` | Launch the evaluation daemon and web console |
+| `agenve2 start --dry-run` | Shadow mode: evaluates and logs policy matches without blocking execution |
+| `agenve2 proxy -- <command>` | Transparently proxy standard I/O for MCP servers |
+| `agenve2 eval --tool <name> --args '<json>'` | Evaluate an individual tool call payload against policy |
+| `agenve2 check` | Validate `policy.yaml` syntax and rule configurations |
+| `agenve2 logs --blocked` | Query recent blocked execution attempts from the audit store |
+| `agenve2 audit verify` | Verify cryptographic hash integrity of stored audit records |
+| `agenve2 kill` | Activate the global kill switch |
+| `agenve2 kill --unlock` | Deactivate the global kill switch |
 
 ---
 

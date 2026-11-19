@@ -1,0 +1,19 @@
+{
+  "mcpServers": {
+    "agenve2-filesystem": {
+      "command": "agenve2",
+      "args": [
+        "proxy",
+        "--agent",
+        "antigravity",
+        "--policy",
+        "./policy.yaml",
+        "--",
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "."
+      ]
+    }
+  }
+}

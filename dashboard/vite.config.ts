@@ -6,7 +6,7 @@ import path from "path";
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   build: {
-    outDir: path.resolve(__dirname, "../src/veto/dashboard_dist"),
+    outDir: path.resolve(__dirname, "../src/agenve2/dashboard_dist"),
     emptyOutDir: true,
   },
   server: {

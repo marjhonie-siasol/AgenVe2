@@ -3,13 +3,13 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "veto-firewall"
+name = "agenve2-firewall"
 version = "0.1.0"
 description = "Open-source, Python-native AI Agent Execution Firewall with YAML policies, deterministic security plug-ins, MCP proxy, human approvals, and tamper-evident audit logs."
 readme = "README.md"
 license = { text = "Apache-2.0" }
 requires-python = ">=3.11"
-authors = [{ name = "Veto Contributors" }]
+authors = [{ name = "AgenVe2 Contributors" }]
 keywords = ["ai-agents", "firewall", "guardrails", "mcp", "security", "llm"]
 
 dependencies = [
@@ -38,10 +38,10 @@ ml = [
 ]
 
 [project.scripts]
-veto = "veto.cli:app"
+agenve2 = "agenve2.cli:app"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/veto"]
+packages = ["src/agenve2"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

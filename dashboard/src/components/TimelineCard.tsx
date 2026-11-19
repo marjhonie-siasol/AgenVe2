@@ -89,7 +89,7 @@ export function TimelineCard({
     <motion.section
       layout
       transition={SPRING_GENTLE}
-      className="veto-card relative rounded-[20px]"
+      className="agenve2-card relative rounded-[20px]"
     >
       {/* Header row — quiet, editorial, zero KPI box bloat */}
       <div className="flex flex-wrap items-start justify-between gap-3 px-5 pt-4 pb-3.5">
@@ -193,11 +193,11 @@ export function TimelineCard({
             <p className="mt-1 max-w-sm text-[12.5px] leading-relaxed text-neutral-400">
               Run an agent via{" "}
               <code className="rounded bg-neutral-100 px-1.5 py-0.5 text-[11.5px] text-neutral-700">
-                veto proxy
+                agenve2 proxy
               </code>{" "}
               or{" "}
               <code className="rounded bg-neutral-100 px-1.5 py-0.5 text-[11.5px] text-neutral-700">
-                @veto.guard
+                @agenve2.guard
               </code>
               , or pick any quick test preset in the simulator bar below.
             </p>
@@ -336,7 +336,7 @@ export function TimelineCard({
                           exit={{ opacity: 0, y: 4, scale: 0.985 }}
                           transition={{ duration: 0.14, ease: "easeOut" }}
                           onClick={(e) => e.stopPropagation()}
-                          className="veto-popover pointer-events-none absolute left-6 bottom-full z-30 mb-2 w-[430px] max-w-[calc(100vw-4rem)] rounded-2xl p-3.5 text-left"
+                          className="agenve2-popover pointer-events-none absolute left-6 bottom-full z-30 mb-2 w-[430px] max-w-[calc(100vw-4rem)] rounded-2xl p-3.5 text-left"
                         >
                           <div className="flex items-center justify-between border-b border-black/[0.06] pb-2">
                             <span className="text-[12px] font-medium text-neutral-500">
@@ -519,7 +519,7 @@ export function TimelineCard({
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 3, scale: 0.98 }}
                     transition={{ duration: 0.12 }}
-                    className="veto-popover pointer-events-none absolute bottom-full left-0 z-30 mb-2 w-64 rounded-xl px-3 py-2 text-left"
+                    className="agenve2-popover pointer-events-none absolute bottom-full left-0 z-30 mb-2 w-64 rounded-xl px-3 py-2 text-left"
                   >
                     <div className="flex items-center justify-between">
                       <span className="font-mono text-[11.5px] font-medium text-neutral-900">

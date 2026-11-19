@@ -50,7 +50,7 @@ export function PolicyView({
       </div>
 
       {/* Active Policy YAML Card */}
-      <section className="veto-card overflow-hidden rounded-[20px]">
+      <section className="agenve2-card overflow-hidden rounded-[20px]">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-black/[0.055] px-5 py-3">
           <div className="flex items-center gap-2">
             <FileCode2 className="h-4 w-4 text-neutral-400" />

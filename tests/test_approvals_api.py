@@ -6,9 +6,9 @@ from pathlib import Path
 import httpx
 import pytest
 
-from veto.core.models import Decision
-from veto.core.policy import PRESETS
-from veto.server.app import VetoRuntime, create_app
+from agenve2.core.models import Decision
+from agenve2.core.policy import PRESETS
+from agenve2.server.app import AgenVe2Runtime, create_app
 
 
 @pytest.fixture
@@ -16,7 +16,7 @@ def runtime_and_app(tmp_path: Path):
     policy_file = tmp_path / "policy.yaml"
     policy_file.write_text(PRESETS["strict"], encoding="utf-8")
     db_url = f"sqlite:///{(tmp_path / 'audit.db').as_posix()}"
-    rt = VetoRuntime(policy_path=policy_file, database_url=db_url)
+    rt = AgenVe2Runtime(policy_path=policy_file, database_url=db_url)
     app = create_app(runtime=rt, serve_dashboard=False)
     return rt, app
 

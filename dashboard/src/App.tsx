@@ -388,12 +388,12 @@ export default function App() {
             className="flex items-center gap-2 cursor-pointer"
           >
             <img
-              src="/veto.logo.png"
-              alt="Veto"
+              src="/agenve2.logo.png"
+              alt="AgenVe2"
               className="h-7 w-7 rounded-lg object-contain"
             />
             <span className="text-[14.5px] font-semibold tracking-[-0.02em] text-neutral-900">
-              Veto
+              AgenVe2
             </span>
           </button>
 
@@ -627,7 +627,7 @@ export default function App() {
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 6, scale: 0.96 }}
                   transition={SPRING_SNAPPY}
-                  className="veto-pill pointer-events-auto inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-[12px]"
+                  className="agenve2-pill pointer-events-auto inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-[12px]"
                 >
                   {toast.tone === "ok" ? (
                     <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />

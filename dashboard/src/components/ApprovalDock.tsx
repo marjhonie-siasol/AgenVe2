@@ -166,7 +166,7 @@ export function ApprovalDock({ pending, onDecide }: ApprovalDockProps) {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 10, scale: 0.985 }}
           transition={SPRING_SNAPPY}
-          className="veto-card overflow-hidden rounded-[18px] border-amber-300/60"
+          className="agenve2-card overflow-hidden rounded-[18px] border-amber-300/60"
         >
           {/* Header mimicking 3.design.mp4: "1 waiting on you" */}
           <button

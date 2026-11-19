@@ -245,12 +245,12 @@ export function Sidebar({
             <div className="flex h-12 items-center justify-between border-b border-black/[0.06] px-4">
               <div className="flex items-center gap-2">
                 <img
-                  src="/veto.logo.png"
-                  alt="Veto"
+                  src="/agenve2.logo.png"
+                  alt="AgenVe2"
                   className="h-6 w-6 rounded-md object-contain"
                 />
                 <span className="text-[14px] font-semibold tracking-[-0.015em]">
-                  Veto
+                  AgenVe2
                 </span>
               </div>
               <button

@@ -33,12 +33,12 @@ export function PluginsPage({ plugins, logs }: PluginsPageProps) {
           Security plug-ins
         </h1>
         <p className="mt-0.5 text-[12.5px] text-neutral-500">
-          Deterministic microkernel guards loaded into Veto’s short-circuiting
+          Deterministic microkernel guards loaded into AgenVe2’s short-circuiting
           evaluation pipeline.
         </p>
       </div>
 
-      <section className="veto-card overflow-hidden rounded-[20px]">
+      <section className="agenve2-card overflow-hidden rounded-[20px]">
         <div className="flex items-center justify-between border-b border-black/[0.055] px-5 py-3.5">
           <div className="flex items-center gap-2">
             <Shield className="h-4 w-4 text-neutral-400" />

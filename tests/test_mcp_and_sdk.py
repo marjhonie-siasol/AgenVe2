@@ -5,9 +5,9 @@ from pathlib import Path
 
 import pytest
 
-from veto.core.policy import PRESETS
-from veto.proxy.mcp_proxy import MCPStdioProxy
-from veto.sdk.decorator import VetoBlockedError, guard
+from agenve2.core.policy import PRESETS
+from agenve2.proxy.mcp_proxy import MCPStdioProxy
+from agenve2.sdk.decorator import AgenVe2BlockedError, guard
 
 
 def test_sdk_guard_decorator_sync_and_async(tmp_path: Path):
@@ -21,7 +21,7 @@ def test_sdk_guard_decorator_sync_and_async(tmp_path: Path):
 
     assert postgres_query("SELECT * FROM users LIMIT 5") == "EXECUTED: SELECT * FROM users LIMIT 5"
 
-    with pytest.raises(VetoBlockedError) as exc_info:
+    with pytest.raises(AgenVe2BlockedError) as exc_info:
         postgres_query("DROP TABLE users;")
     assert "DROP" in str(exc_info.value)
 
@@ -77,4 +77,4 @@ async def test_mcp_stdio_proxy_intercepts_tools_call(tmp_path: Path):
     parsed = json.loads(blocked_resp.decode("utf-8"))
     assert parsed["id"] == 3
     assert parsed["result"]["isError"] is True
-    assert "[VETO BLOCKED]" in parsed["result"]["content"][0]["text"]
+    assert "[AGENVE2 BLOCKED]" in parsed["result"]["content"][0]["text"]

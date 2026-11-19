@@ -74,7 +74,7 @@ export function OverviewPage({
       </div>
 
       {/* Unified Hairline Metric Strip (refined GCP-style summary bar, zero chunky cards) */}
-      <section className="veto-card grid grid-cols-2 divide-y divide-black/[0.055] overflow-hidden rounded-[18px] sm:grid-cols-5 sm:divide-x sm:divide-y-0">
+      <section className="agenve2-card grid grid-cols-2 divide-y divide-black/[0.055] overflow-hidden rounded-[18px] sm:grid-cols-5 sm:divide-x sm:divide-y-0">
         <div className="px-4 py-3.5">
           <div className="text-[11.5px] font-medium text-neutral-400">
             Total intercepted
@@ -145,7 +145,7 @@ export function OverviewPage({
       <ApprovalDock pending={pending} onDecide={onDecideApproval} />
 
       {/* Quick Dry-Run Test Strip */}
-      <section className="veto-card flex flex-wrap items-center justify-between gap-3 rounded-[18px] px-4 py-3">
+      <section className="agenve2-card flex flex-wrap items-center justify-between gap-3 rounded-[18px] px-4 py-3">
         <div className="flex items-center gap-2 text-[12.5px] font-medium text-neutral-700">
           <FlaskConical className="h-3.5 w-3.5 text-blue-600" />
           <span>Quick dry-run test</span>

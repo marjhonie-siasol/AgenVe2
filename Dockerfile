@@ -6,19 +6,19 @@ RUN npm ci
 COPY dashboard/ ./
 RUN npm run build
 
-# Stage 2: Python Veto Runtime
+# Stage 2: Python AgenVe2 Runtime
 FROM python:3.12-slim
 WORKDIR /app
 
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 COPY pyproject.toml README.md policy.example.yaml ./
 COPY src/ ./src/
-COPY --from=dashboard-builder /app/src/veto/dashboard_dist ./src/veto/dashboard_dist
+COPY --from=dashboard-builder /app/src/agenve2/dashboard_dist ./src/agenve2/dashboard_dist
 
 RUN uv pip install --system --no-cache .
 
 EXPOSE 8080
-ENV VETO_POLICY=/app/policy.example.yaml
-ENV VETO_DB_PATH=/data/audit.db
+ENV AGENVE2_POLICY=/app/policy.example.yaml
+ENV AGENVE2_DB_PATH=/data/audit.db
 
-CMD ["veto", "start", "--host", "0.0.0.0", "--port", "8080"]
+CMD ["agenve2", "start", "--host", "0.0.0.0", "--port", "8080"]

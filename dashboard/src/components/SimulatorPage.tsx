@@ -108,7 +108,7 @@ export function SimulatorPage({
       {/* Clean 2-Column Practical Workspace: Composer Left + Live Verdict Right */}
       <div className="grid gap-4 lg:grid-cols-12">
         {/* Composer Card (1.draft.jpg tactile language) */}
-        <section className="veto-card flex flex-col justify-between rounded-[20px] p-4 lg:col-span-7">
+        <section className="agenve2-card flex flex-col justify-between rounded-[20px] p-4 lg:col-span-7">
           <div>
             <div className="flex items-center justify-between pb-2.5">
               <label className="inline-flex items-center gap-1.5 rounded-full border border-black/[0.08] bg-neutral-50 px-3 py-1 text-[12px] text-neutral-600 focus-within:border-blue-400 focus-within:bg-white">
@@ -168,7 +168,7 @@ export function SimulatorPage({
         </section>
 
         {/* Verdict Inspector Card */}
-        <section className="veto-card flex flex-col rounded-[20px] p-4 lg:col-span-5">
+        <section className="agenve2-card flex flex-col rounded-[20px] p-4 lg:col-span-5">
           <div className="flex items-center justify-between border-b border-black/[0.055] pb-2.5">
             <span className="text-[13px] font-semibold text-neutral-900">
               Evaluation verdict
@@ -275,7 +275,7 @@ export function SimulatorPage({
 
       {/* Session Simulation History Rail */}
       {history.length > 0 && (
-        <section className="veto-card overflow-hidden rounded-[20px]">
+        <section className="agenve2-card overflow-hidden rounded-[20px]">
           <div className="flex items-center justify-between border-b border-black/[0.055] px-5 py-3">
             <h2 className="text-[13.5px] font-semibold text-neutral-900">
               Recent simulations

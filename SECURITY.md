@@ -1,10 +1,10 @@
-# Security Policy for Veto
+# Security Policy for AgenVe2
 
-As an execution firewall designed to intercept and restrict autonomous AI tool calls, the security and reliability of Veto itself is our highest priority.
+As an execution firewall designed to intercept and restrict autonomous AI tool calls, the security and reliability of AgenVe2 itself is our highest priority.
 
 ## Scope and Supported Versions
 
-Veto operates directly between AI models and local execution runtimes (shell, SQL engines, filesystem, and external APIs). We actively provide security updates and patches for the current release branch:
+AgenVe2 operates directly between AI models and local execution runtimes (shell, SQL engines, filesystem, and external APIs). We actively provide security updates and patches for the current release branch:
 
 | Version | Status | Security Patches |
 | :--- | :--- | :--- |
@@ -12,7 +12,7 @@ Veto operates directly between AI models and local execution runtimes (shell, SQ
 
 ## Core Security Invariants
 
-When evaluating vulnerabilities in Veto, the following invariants must hold:
+When evaluating vulnerabilities in AgenVe2, the following invariants must hold:
 
 1. **Deterministic Fail-Closed Behavior:** In `enforce` mode, unhandled tools or malformed policy schemas must default to `BLOCK`.
 2. **AST Analysis Integrity:** The SQL AST parser (`sqlglot`) and shell tokenizer must prevent evasion via comment injection, quote wrapping, or parameter smuggling.
@@ -21,13 +21,13 @@ When evaluating vulnerabilities in Veto, the following invariants must hold:
 
 ## Reporting a Vulnerability
 
-If you discover a security issue or bypass in Veto's policy engine, please report it responsibly:
+If you discover a security issue or bypass in AgenVe2's policy engine, please report it responsibly:
 
 * **Private Report:** Please use the **Report a vulnerability** button under the GitHub Security Advisory tab of this repository.
-* **Direct Email:** Alternatively, you may contact the maintainers directly via `security@veto-firewall.dev`.
+* **Direct Email:** Alternatively, you may contact the maintainers directly via `security@agenve2.dev`.
 
 Please include:
-* The version of Veto tested.
+* The version of AgenVe2 tested.
 * A minimal `policy.yaml` demonstrating the rule configuration.
 * The exact tool call payload and reproduction script.
 * Expected vs. actual execution behavior.

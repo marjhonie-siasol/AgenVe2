@@ -1,7 +1,7 @@
 """Simulates an uncensored AI agent attempting safe, dangerous, and approval-gated tool calls.
 
 Run:
-    1. Terminal 1: uv run veto start --policy policy.example.yaml
+    1. Terminal 1: uv run agenve2 start --policy policy.example.yaml
     2. Browser:    open http://localhost:8080
     3. Terminal 2: uv run python examples/rogue_agent_demo.py
 """
@@ -10,12 +10,12 @@ from __future__ import annotations
 
 import os
 
-from veto import VetoBlockedError, VetoClient
+from agenve2 import AgenVe2BlockedError, AgenVe2Client
 
-DAEMON_URL = os.getenv("VETO_DAEMON_URL", "http://127.0.0.1:8080")
-POLICY_PATH = os.getenv("VETO_POLICY", "policy.example.yaml")
+DAEMON_URL = os.getenv("AGENVE2_DAEMON_URL") or os.getenv("VETO_DAEMON_URL", "http://127.0.0.1:8080")
+POLICY_PATH = os.getenv("AGENVE2_POLICY") or os.getenv("VETO_POLICY", "policy.example.yaml")
 
-client = VetoClient(
+client = AgenVe2Client(
     policy=POLICY_PATH,
     daemon_url=DAEMON_URL,
     agent_name="uncensored-llama-demo",
@@ -65,7 +65,7 @@ def main() -> None:
         try:
             result = action()
             print(f"ALLOWED -> {result}")
-        except VetoBlockedError as exc:
+        except AgenVe2BlockedError as exc:
             print(f"BLOCKED -> {exc}")
 
 

@@ -47,7 +47,7 @@ export function ApprovalsPage({ pending, logs, onDecide }: ApprovalsPageProps) {
       {pending.length > 0 ? (
         <ApprovalDock pending={pending} onDecide={onDecide} />
       ) : (
-        <section className="veto-card flex flex-col items-center justify-center rounded-[20px] px-6 py-12 text-center">
+        <section className="agenve2-card flex flex-col items-center justify-center rounded-[20px] px-6 py-12 text-center">
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
             <CheckCircle2 className="h-5 w-5" />
           </div>
@@ -69,7 +69,7 @@ export function ApprovalsPage({ pending, logs, onDecide }: ApprovalsPageProps) {
       )}
 
       {/* Recent Human Decisions Rail (inspired by 3.design.mp4 "Asked: ... -> You: Allow") */}
-      <section className="veto-card overflow-hidden rounded-[20px]">
+      <section className="agenve2-card overflow-hidden rounded-[20px]">
         <div className="flex items-center justify-between border-b border-black/[0.055] px-5 py-3.5">
           <div className="flex items-center gap-2">
             <Clock className="h-4 w-4 text-neutral-400" />

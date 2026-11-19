@@ -2,13 +2,13 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from veto.core.models import Decision, ToolCallRequest
-from veto.plugins.filesystem_guard import FilesystemGuardPlugin
-from veto.plugins.param_bounds import ParamBoundsPlugin
-from veto.plugins.rate_limiter import RateLimiterPlugin
-from veto.plugins.secret_scanner import SecretScannerPlugin, redact_value
-from veto.plugins.shell_guard import ShellGuardPlugin
-from veto.plugins.sql_guard import SQLGuardPlugin
+from agenve2.core.models import Decision, ToolCallRequest
+from agenve2.plugins.filesystem_guard import FilesystemGuardPlugin
+from agenve2.plugins.param_bounds import ParamBoundsPlugin
+from agenve2.plugins.rate_limiter import RateLimiterPlugin
+from agenve2.plugins.secret_scanner import SecretScannerPlugin, redact_value
+from agenve2.plugins.shell_guard import ShellGuardPlugin
+from agenve2.plugins.sql_guard import SQLGuardPlugin
 
 
 def test_sql_guard_allows_safe_select():

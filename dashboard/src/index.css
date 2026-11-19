@@ -27,18 +27,21 @@
   }
 }
 
+.agenve2-card,
 .veto-card {
   background: var(--surface-card);
   border: 1px solid var(--border-hairline);
   box-shadow: var(--shadow-card);
 }
 
+.agenve2-popover,
 .veto-popover {
   background: var(--surface-card);
   border: 1px solid var(--border-subtle);
   box-shadow: var(--shadow-popover);
 }
 
+.agenve2-pill,
 .veto-pill {
   background: var(--surface-card);
   border: 1px solid var(--border-hairline);

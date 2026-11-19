@@ -4,10 +4,10 @@ from pathlib import Path
 
 from sqlmodel import Session, select
 
-from veto.core.models import ToolCallRequest
-from veto.core.pipeline import EvaluationPipeline
-from veto.core.policy import PRESETS, PolicyLoader
-from veto.storage.repository import AuditLogRow, SQLModelAuditRepository
+from agenve2.core.models import ToolCallRequest
+from agenve2.core.pipeline import EvaluationPipeline
+from agenve2.core.policy import PRESETS, PolicyLoader
+from agenve2.storage.repository import AuditLogRow, SQLModelAuditRepository
 
 
 def test_sqlite_wal_persistence_redaction_and_hash_chain(tmp_path: Path):

@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from veto.core.models import Decision, PolicyMode, ToolCallRequest
-from veto.core.pipeline import EvaluationPipeline
-from veto.core.policy import PRESETS, PolicyLoader
+from agenve2.core.models import Decision, PolicyMode, ToolCallRequest
+from agenve2.core.pipeline import EvaluationPipeline
+from agenve2.core.policy import PRESETS, PolicyLoader
 
 
 def _make_loader(tmp_path: Path, preset: str = "strict") -> PolicyLoader:

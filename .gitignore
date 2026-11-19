@@ -12,6 +12,7 @@ build/
 *.db-wal
 *.db-shm
 .veto/
+.agenve2/
 dashboard/node_modules/
 dashboard/.vite/
 dashboard/tsconfig.tsbuildinfo

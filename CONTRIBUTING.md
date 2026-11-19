@@ -1,10 +1,10 @@
-# Contributing to Veto
+# Contributing to AgenVe2
 
-Thank you for your interest in contributing to Veto. As an execution firewall for autonomous AI workflows, we welcome contributions that strengthen our AST parsers, add new security plugins, improve performance, or expand framework integrations.
+Thank you for your interest in contributing to AgenVe2. As an execution firewall for autonomous AI workflows, we welcome contributions that strengthen our AST parsers, add new security plugins, improve performance, or expand framework integrations.
 
 ## Local Development Workflow
 
-Veto is built with Python 3.11+ and uses `uv` for project and package management.
+AgenVe2 is built with Python 3.11+ and uses `uv` for project and package management.
 
 ### Prerequisites
 
@@ -15,8 +15,8 @@ Veto is built with Python 3.11+ and uses `uv` for project and package management
 ### Setup Environment
 
 ```bash
-git clone https://github.com/marjhonie-siasol/Veto.git
-cd Veto
+git clone https://github.com/marjhonie-siasol/AgenVe2.git
+cd AgenVe2
 uv sync --extra dev
 ```
 
@@ -39,12 +39,12 @@ uv run ruff format . --check
 
 ## Adding a New Security Plugin
 
-Veto uses a microkernel architecture. To contribute a new security check:
+AgenVe2 uses a microkernel architecture. To contribute a new security check:
 
-1. Create a new plugin file in `src/veto/plugins/` inheriting from `BasePlugin`.
+1. Create a new plugin file in `src/agenve2/plugins/` inheriting from `BasePlugin`.
 2. Implement the `evaluate(request: ToolCallRequest, options: dict) -> PluginResult` method.
 3. Ensure all checks run in under 5 milliseconds using deterministic AST or pattern matching (avoid external network calls or LLM evaluations inside the evaluation pipeline).
-4. Register the plugin in `src/veto/plugins/__init__.py`.
+4. Register the plugin in `src/agenve2/plugins/__init__.py`.
 5. Add unit tests in `tests/test_plugins.py` verifying both `ALLOW` and `BLOCK` scenarios.
 
 ## Submitting Pull Requests
