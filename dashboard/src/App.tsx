@@ -66,6 +66,7 @@ export default function App() {
     null
   );
   const [savingPolicy, setSavingPolicy] = useState(false);
+  const [generatingPolicy, setGeneratingPolicy] = useState(false);
 
   const [simTool, setSimTool] = useState("postgres_query");
   const [simArgs, setSimArgs] = useState(
@@ -253,6 +254,30 @@ export default function App() {
       }
     } finally {
       setSavingPolicy(false);
+    }
+  };
+
+  const handleGeneratePolicy = async () => {
+    setPolicyMsg(null);
+    setGeneratingPolicy(true);
+    try {
+      const res = await fetch("/api/policy/generate", { method: "POST" });
+      if (res.ok) {
+        const data = await res.json();
+        setPolicyYaml(data.yaml_content);
+        setPolicyMsg({
+          ok: true,
+          text: `Drafted starter policy from ${data.tool_count} observed tool(s). Review and click Save & hot-reload.`,
+        });
+      } else {
+        const err = await res.json();
+        setPolicyMsg({
+          ok: false,
+          text: err.detail || "No audit logs available to generate policy.",
+        });
+      }
+    } finally {
+      setGeneratingPolicy(false);
     }
   };
 
@@ -585,8 +610,10 @@ export default function App() {
                   policyYaml={policyYaml}
                   policyMsg={policyMsg}
                   saving={savingPolicy}
+                  generating={generatingPolicy}
                   onPolicyChange={setPolicyYaml}
                   onSavePolicy={handleSavePolicy}
+                  onGeneratePolicy={handleGeneratePolicy}
                 />
               )}
 

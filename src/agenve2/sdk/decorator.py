@@ -50,6 +50,20 @@ class AgenVe2Client:
             kill_switch=self.repository.get_kill_switch() if self.repository else False,
         )
 
+    def _evaluate_local(self, req: ToolCallRequest) -> dict[str, Any]:
+        if self.repository:
+            self.pipeline.kill_switch = self.repository.get_kill_switch()
+        report: EvaluationReport = self.pipeline.evaluate(req)
+        if report.effective_decision == Decision.REQUIRE_APPROVAL:
+            report.effective_decision = Decision.BLOCK
+            report.reason = (
+                f"Tool '{req.tool_name}' requires human approval. Connect AgenVe2Client to a "
+                "running AgenVe2 daemon (daemon_url='http://127.0.0.1:8080') to approve interactively."
+            )
+        if self.repository:
+            self.repository.record_evaluation(report)
+        return report.model_dump(mode="json")
+
     def evaluate(
         self,
         tool_name: str,
@@ -74,18 +88,33 @@ class AgenVe2Client:
             except httpx.HTTPError:
                 pass
 
-        if self.repository:
-            self.pipeline.kill_switch = self.repository.get_kill_switch()
-        report: EvaluationReport = self.pipeline.evaluate(req)
-        if report.effective_decision == Decision.REQUIRE_APPROVAL:
-            report.effective_decision = Decision.BLOCK
-            report.reason = (
-                f"Tool '{tool_name}' requires human approval. Connect AgenVe2Client to a "
-                "running AgenVe2 daemon (daemon_url='http://127.0.0.1:8080') to approve interactively."
-            )
-        if self.repository:
-            self.repository.record_evaluation(report)
-        return report.model_dump(mode="json")
+        return self._evaluate_local(req)
+
+    async def async_evaluate(
+        self,
+        tool_name: str,
+        arguments: dict[str, Any],
+        agent_name: str | None = None,
+    ) -> dict[str, Any]:
+        req = ToolCallRequest(
+            agent_name=agent_name or self.agent_name,
+            tool_name=tool_name,
+            arguments=arguments,
+        )
+        if self.daemon_url:
+            timeout_sec = self.policy_loader.config.defaults.approval_timeout_seconds + 15
+            try:
+                async with httpx.AsyncClient(timeout=timeout_sec) as client:
+                    resp = await client.post(
+                        f"{self.daemon_url}/api/evaluate",
+                        json=req.model_dump(mode="json"),
+                    )
+                    if resp.status_code == 200:
+                        return resp.json()
+            except httpx.HTTPError:
+                pass
+
+        return self._evaluate_local(req)
 
     def guard(self, tool_name: str | None = None) -> Callable[[F], F]:
         """Decorator wrapping any Python tool function with AgenVe2 enforcement."""
@@ -110,7 +139,7 @@ class AgenVe2Client:
             async def async_wrapper(*args: Any, **kwargs: Any) -> Any:
                 bound = sig.bind_partial(*args, **kwargs)
                 bound.apply_defaults()
-                result = self.evaluate(resolved_tool_name, dict(bound.arguments))
+                result = await self.async_evaluate(resolved_tool_name, dict(bound.arguments))
                 eff = result.get("effective_decision", Decision.BLOCK.value)
                 if eff not in (Decision.ALLOW.value, Decision.APPROVED.value):
                     raise AgenVe2BlockedError(

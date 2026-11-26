@@ -101,6 +101,8 @@ AgenVe2 acts as an inline transparent gatekeeper between the reasoning agent and
 
 - **Sub-3ms Deterministic Latency:** Written in pure CPython and accelerated AST parsers (`sqlglot`, `shlex`, `pathlib`). Eliminates model-as-a-judge roundtrips.
 - **Strict Fail-Closed Microkernel:** Any unmapped tool, malformed parameter schema, or unhandled exception resolves to `BLOCK`.
+- **Wildcard Policy Matching & Auto-Generation:** Exact rules take precedence over glob patterns (`read_*`, `*_query`, `list_*`), and `agenve2 generate-policy` drafts least-privilege YAML directly from audit logs.
+- **Inbound & Outbound MCP Scanning:** Intercepts JSON-RPC `tools/call` requests on the way in, and redacts leaked secrets + warns on indirect prompt injections in tool responses on the way out.
 - **Zero Model Dependencies:** Agnostic to agent architecture. Compatible with local self-hosted models (vLLM, Ollama, llama.cpp), enterprise API gateways (Anthropic, OpenAI, Google Gemini), and IDE agents (Antigravity, Cursor, Claude Code).
 - **Hot-Reloadable Policy as Code:** Declarative YAML policies reload automatically on filesystem change without dropping connections or restarting daemon processes.
 - **Tamper-Evident Ledger:** Audit entries are cryptographically chained using SHA-256 digests, providing non-repudiation for security audits and compliance reporting.
@@ -128,7 +130,15 @@ AgenVe2 can be deployed at any tier of an agent system:
 
 ### 1. Model Context Protocol (MCP) Stdio Proxy
 
-Wrap existing MCP servers transparently without modifying their source code. In your client configuration (e.g., `claude_desktop_config.json`, `mcp.json`, or Antigravity):
+Wrap all existing IDE/client MCP servers automatically (creating `.agenve2.bak` backups):
+
+```bash
+agenve2 wrap --policy ./policy.yaml
+# Undo anytime:
+agenve2 restore
+```
+
+Or wrap an individual MCP server directly in `claude_desktop_config.json`, `mcp.json`, or Antigravity:
 
 ```json
 {
@@ -137,6 +147,7 @@ Wrap existing MCP servers transparently without modifying their source code. In 
       "command": "agenve2",
       "args": [
         "proxy",
+        "--auto-start",
         "--policy", "./policy.yaml",
         "--",
         "npx", "@modelcontextprotocol/server-postgres", "postgresql://localhost/prod"
@@ -146,53 +157,46 @@ Wrap existing MCP servers transparently without modifying their source code. In 
 }
 ```
 
-The proxy intercepts JSON-RPC requests on `stdin`/`stdout`, parses tool payloads against `policy.yaml`, and drops non-compliant executions before they reach the server binary.
+The proxy intercepts JSON-RPC `tools/call` requests on `stdin`/`stdout`, evaluates arguments against `policy.yaml`, pauses for human approval when required, and scans outbound tool responses to redact leaked secrets or flag indirect prompt injections before they reach the model.
 
-### 2. Python SDK Decorator
+### 2. Python SDK Decorator (Sync & Async)
 
-Protect Python functions in your agent codebase:
+Protect sync or `async def` Python tools in your agent codebase (`async_evaluate` keeps asyncio event loops non-blocking during approval waits):
 
 ```python
 from agenve2 import AgenVe2Client
 
-firewall = AgenVe2Client(policy="./policy.yaml")
+firewall = AgenVe2Client(policy="./policy.yaml", daemon_url="http://127.0.0.1:8080")
 
 @firewall.guard("postgres_query")
-def execute_query(query: str) -> list[dict]:
-    # This block executes only if query passes sql_guard AST validation
+async def execute_query(query: str) -> list[dict]:
+    # Executes only if query passes sql_guard AST validation
     return db_connection.execute(query).fetchall()
 ```
 
 ### 3. Universal Agent Loop Middleware
 
-Directly evaluate function calls inside custom loops, LangChain, CrewAI, AutoGen, or LlamaIndex:
+Directly evaluate function calls inside custom loops, LangGraph, CrewAI, AutoGen, or PydanticAI. When `daemon_url` is configured and a rule specifies `require_approval`, `evaluate()` / `await async_evaluate()` automatically pauses until an operator clicks Approve or Deny in the Web Console or via a signed Slack/Discord webhook link:
 
 ```python
 from agenve2 import AgenVe2Client
 
-firewall = AgenVe2Client(policy="./policy.yaml")
+firewall = AgenVe2Client(policy="./policy.yaml", daemon_url="http://127.0.0.1:8080")
 
-# Inside your tool execution dispatcher:
-decision = firewall.evaluate(
+# Inside your async tool dispatcher:
+decision = await firewall.async_evaluate(
     tool_name=tool_call.name,
     arguments=tool_call.arguments,
     agent_name="data-analyst-agent",
 )
 
-if decision["effective_decision"] == "BLOCK":
-    # Surface deterministic policy error back to agent reasoning context
+if decision["effective_decision"] not in ("ALLOW", "APPROVED"):
     return {
         "error": f"Execution halted by AgenVe2: {decision['reason']}",
         "rule": decision["rule_triggered"],
     }
 
-if decision["effective_decision"] == "REQUIRE_APPROVAL":
-    # Wait for operator confirmation via Web Console
-    approval = firewall.wait_for_approval(decision["request_id"])
-    if not approval["approved"]:
-        return {"error": f"Operator denied execution: {approval['feedback']}"}
-
-# Allowed: execute real tool
+# Allowed or operator-approved: execute real tool
 return tool_registry[tool_call.name](**tool_call.arguments)
 ```
 
@@ -206,18 +210,24 @@ Install AgenVe2 via `uv` or `pip`:
 
 ```bash
 # Using uv (recommended)
-uv add agenve2
+uv add agenve2-firewall
 
 # Using standard pip
-pip install agenve2
+pip install agenve2-firewall
 ```
 
 For development and local testing from source:
 
 ```bash
-git clone https://github.com/your-org/agenve2.git
-cd agenve2
+git clone https://github.com/marjhonie-siasol/AgenVe2.git
+cd AgenVe2
 uv sync --dev
+```
+
+Run the real (non-mocked) SQLite + filesystem demo:
+
+```bash
+uv run python examples/real_sqlite_agent_demo.py
 ```
 
 ### 2. Initialize Policy Configuration
@@ -406,7 +416,10 @@ rules:
 | :--- | :--- | :--- |
 | `agenve2 init` | `-o, --output <path>`, `-p, --preset <strict\|coding\|data>`, `-f, --force` | Generate starter `policy.yaml` configuration. |
 | `agenve2 start` | `-p, --policy <path>`, `--host <ip>`, `--port <num>`, `--dry-run`, `--no-ui` | Start evaluation gateway daemon and web console. |
-| `agenve2 proxy` | `-- <command...>`, `-p, --policy <path>`, `--daemon <url>` | Wrap an MCP stdio server with transparent filtering. |
+| `agenve2 proxy` | `-- <command...>`, `-p, --policy <path>`, `--daemon <url>`, `--auto-start` | Wrap an MCP stdio server with inbound/outbound filtering. |
+| `agenve2 wrap` | `-p, --policy <path>`, `-c, --config <path>`, `--daemon <url>` | Auto-wrap IDE MCP configs (`.agenve2.bak` backups created). |
+| `agenve2 restore` | `-c, --config <path>` | Restore wrapped IDE MCP configs from backup. |
+| `agenve2 generate-policy` | `-o, --output <path>`, `-n, --limit <count>`, `--db <path>` | Generate least-privilege `policy.yaml` from audit logs. |
 | `agenve2 test` | `-t, --tool <name>`, `-a, --args '<json>'`, `-p, --policy <path>` | Test tool execution against policy without running agents. |
 | `agenve2 check` | `-p, --policy <path>` | Validate YAML syntax and Pydantic schema of policy. |
 | `agenve2 logs` | `-n, --limit <count>`, `--blocked` | Query recent audit records directly from terminal. |

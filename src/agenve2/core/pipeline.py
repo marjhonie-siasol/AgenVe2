@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import fnmatch
 import time
 from typing import Any
 
@@ -11,8 +12,29 @@ from agenve2.core.models import (
     PolicyMode,
     ToolCallRequest,
 )
-from agenve2.core.policy import PluginConfig, PolicyConfig, PolicyLoader
+from agenve2.core.policy import PluginConfig, PolicyConfig, PolicyLoader, RuleConfig
 from agenve2.plugins import PluginRegistry, create_default_registry, redact_value
+
+
+def _resolve_rule(
+    rules: dict[str, RuleConfig], tool_name: str
+) -> tuple[str, RuleConfig | None]:
+    """Resolve an exact rule first, then the most specific matching glob pattern."""
+    if tool_name in rules:
+        return tool_name, rules[tool_name]
+
+    matches: list[tuple[tuple[int, int], str, RuleConfig]] = []
+    for pattern, rule in rules.items():
+        if any(ch in pattern for ch in ("*", "?", "[")) and fnmatch.fnmatchcase(tool_name, pattern):
+            literal_chars = sum(1 for ch in pattern if ch not in ("*", "?", "["))
+            matches.append(((literal_chars, len(pattern)), pattern, rule))
+
+    if not matches:
+        return tool_name, None
+
+    matches.sort(key=lambda item: item[0], reverse=True)
+    _, matched_pattern, matched_rule = matches[0]
+    return matched_pattern, matched_rule
 
 
 class EvaluationPipeline:
@@ -91,13 +113,16 @@ class EvaluationPipeline:
         options = plugin_cfg.plugin_options()
         if plugin_cfg.name == "rate_limiter" and "max_calls_per_minute" not in options:
             options["max_calls_per_minute"] = policy.rate_limit.max_calls_per_minute
-        if plugin_cfg.name == "filesystem_guard" and "base_dir" not in options:
-            if self.policy_loader.path:
-                options["base_dir"] = str(self.policy_loader.path.parent.resolve())
+        if (
+            plugin_cfg.name == "filesystem_guard"
+            and "base_dir" not in options
+            and self.policy_loader.path
+        ):
+            options["base_dir"] = str(self.policy_loader.path.parent.resolve())
 
         try:
             return plugin.evaluate(request, options)
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001
             # Fail-closed on any unexpected plug-in crash
             return FilterResult(
                 plugin_name=plugin_cfg.name,
@@ -157,8 +182,8 @@ class EvaluationPipeline:
                     redacted_args=redacted_args,
                 )
 
-        # Stage 2: Tool Policy Resolution (Fail-closed default)
-        rule = policy.rules.get(request.tool_name)
+        # Stage 2: Tool Policy Resolution (Exact match -> glob pattern -> fail-closed default)
+        matched_rule_key, rule = _resolve_rule(policy.rules, request.tool_name)
         if rule is None:
             default_action = policy.defaults.action
             if default_action == PolicyAction.DENY:
@@ -200,7 +225,7 @@ class EvaluationPipeline:
                 request=request,
                 decision=Decision.BLOCK,
                 reason=rule.message or f"Tool '{request.tool_name}' is explicitly denied by policy.",
-                rule_triggered=f"rules.{request.tool_name}:deny",
+                rule_triggered=f"rules.{matched_rule_key}:deny",
                 plugin_triggered=None,
                 filters=filters,
                 start_ns=start_ns,
@@ -216,7 +241,7 @@ class EvaluationPipeline:
                     request=request,
                     decision=Decision.BLOCK,
                     reason=res.reason,
-                    rule_triggered=f"rules.{request.tool_name}:{plugin_cfg.name}",
+                    rule_triggered=f"rules.{matched_rule_key}:{plugin_cfg.name}",
                     plugin_triggered=plugin_cfg.name,
                     filters=filters,
                     start_ns=start_ns,
@@ -229,7 +254,7 @@ class EvaluationPipeline:
                 request=request,
                 decision=Decision.REQUIRE_APPROVAL,
                 reason=rule.message or f"Tool '{request.tool_name}' requires operator approval.",
-                rule_triggered=f"rules.{request.tool_name}:require_approval",
+                rule_triggered=f"rules.{matched_rule_key}:require_approval",
                 plugin_triggered=None,
                 filters=filters,
                 start_ns=start_ns,
@@ -240,7 +265,7 @@ class EvaluationPipeline:
             request=request,
             decision=Decision.ALLOW,
             reason=f"Tool '{request.tool_name}' passed all policy & plug-in checks.",
-            rule_triggered=f"rules.{request.tool_name}:allow",
+            rule_triggered=f"rules.{matched_rule_key}:allow",
             plugin_triggered=None,
             filters=filters,
             start_ns=start_ns,

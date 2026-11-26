@@ -13,8 +13,9 @@ from rich.table import Table
 
 from agenve2.core.models import Decision, ToolCallRequest
 from agenve2.core.pipeline import EvaluationPipeline
-from agenve2.core.policy import PRESETS, PolicyError, PolicyLoader
+from agenve2.core.policy import PRESETS, PolicyError, PolicyLoader, generate_policy_yaml
 from agenve2.proxy.mcp_proxy import run_mcp_proxy
+from agenve2.proxy.wrapper import discover_mcp_configs, restore_mcp_config, wrap_mcp_config
 from agenve2.server.app import AgenVe2Runtime, create_app
 from agenve2.storage.repository import SQLModelAuditRepository, default_db_url
 
@@ -120,6 +121,7 @@ def proxy(
     policy: Path | None = typer.Option(None, "--policy", "-p", help="Path to policy.yaml."),
     daemon_url: str = typer.Option("http://127.0.0.1:8080", "--daemon", help="Running AgenVe2 daemon URL."),
     agent: str = typer.Option("mcp-client", "--agent", help="Agent name recorded in audit logs."),
+    auto_start: bool = typer.Option(False, "--auto-start", help="Auto-start local AgenVe2 daemon if offline."),
 ) -> None:
     """Transparently wrap an MCP stdio server: agenve2 proxy -- <command...>."""
     target_cmd = list(ctx.args)
@@ -136,6 +138,7 @@ def proxy(
             policy_path=policy_path if policy_path.exists() else None,
             daemon_url=daemon_url,
             agent_name=agent,
+            auto_start=auto_start,
         )
     )
     raise typer.Exit(code=exit_code)
@@ -171,7 +174,7 @@ def test(
     try:
         parsed_args = json.loads(args)
         if not isinstance(parsed_args, dict):
-            raise ValueError("--args must be a JSON object.")
+            raise TypeError("--args must be a JSON object.")
     except Exception as exc:
         console.print(f"[red]Invalid --args JSON:[/red] {exc}")
         raise typer.Exit(code=1) from exc
@@ -243,7 +246,7 @@ def audit_verify(
 ) -> None:
     """Verify SHA-256 hash-chain integrity of all audit entries."""
     repo = SQLModelAuditRepository(default_db_url(db) if db else None)
-    ok, count, msg = repo.verify_chain()
+    ok, _count, msg = repo.verify_chain()
     if ok:
         console.print(f"[green]OK:[/green] {msg}")
     else:
@@ -263,3 +266,69 @@ def kill(
         console.print("[green]Global Kill Switch UNLOCKED. Normal policy enforcement resumed.[/green]")
     else:
         console.print("[bold red]GLOBAL KILL SWITCH ENGAGED. All agent tool executions are now BLOCKED.[/bold red]")
+
+
+@app.command()
+def wrap(
+    policy: Path | None = typer.Option(None, "--policy", "-p", help="Path to policy.yaml."),
+    config: Path | None = typer.Option(None, "--config", "-c", help="Specific mcp_config.json to wrap."),
+    daemon_url: str = typer.Option("http://127.0.0.1:8080", "--daemon", help="Running AgenVe2 daemon URL."),
+) -> None:
+    """Wrap discovered IDE MCP servers with `agenve2 proxy` (creating .agenve2.bak backups)."""
+    policy_path = _resolve_policy_path(policy)
+    targets = [("Custom", config)] if config else discover_mcp_configs()
+    if not targets:
+        console.print("[yellow]No MCP client configs found. Pass --config <path>.[/yellow]")
+        raise typer.Exit(code=1)
+
+    total = 0
+    for label, path in targets:
+        if not path.exists():
+            console.print(f"[red]Not found:[/red] {path}")
+            continue
+        count, backup = wrap_mcp_config(path, policy_path=policy_path, daemon_url=daemon_url)
+        total += count
+        console.print(f"[green]{label}[/green]: wrapped {count} server(s) in {path} (backup: {backup.name})")
+    console.print(f"Done. Wrapped {total} MCP server(s). Run [bold]agenve2 restore[/bold] to undo.")
+
+
+@app.command()
+def restore(
+    config: Path | None = typer.Option(None, "--config", "-c", help="Specific mcp_config.json to restore."),
+) -> None:
+    """Restore IDE MCP configs from their AgenVe2 backups."""
+    targets = [("Custom", config)] if config else discover_mcp_configs()
+    if not targets:
+        console.print("[yellow]No MCP client configs found. Pass --config <path>.[/yellow]")
+        raise typer.Exit(code=1)
+
+    for label, path in targets:
+        if not path.exists():
+            continue
+        restored = restore_mcp_config(path)
+        console.print(f"[green]{label}[/green]: restored {path} ({restored} change(s)).")
+
+
+@app.command("generate-policy")
+def generate_policy(
+    output: Path = typer.Option(Path("policy.generated.yaml"), "--output", "-o", help="Output policy file."),
+    db: Path | None = typer.Option(None, "--db", help="Custom SQLite audit DB path."),
+    limit: int = typer.Option(500, "--limit", "-n", help="Recent audit entries to inspect."),
+) -> None:
+    """Generate a least-privilege starter policy.yaml from observed audit logs."""
+    repo = SQLModelAuditRepository(default_db_url(db) if db else None)
+    logs = repo.list_logs(limit=limit)
+    tools = [str(row["tool_name"]) for row in logs]
+    if not tools:
+        console.print("[yellow]No audit logs found yet. Run in --dry-run or proxy mode first.[/yellow]")
+        raise typer.Exit(code=1)
+
+    content = generate_policy_yaml(tools)
+    output.write_text(content, encoding="utf-8")
+    console.print(
+        f"[green]Generated[/green] {output} covering {len(set(tools))} distinct tool(s)."
+    )
+
+
+if __name__ == "__main__":
+    app()

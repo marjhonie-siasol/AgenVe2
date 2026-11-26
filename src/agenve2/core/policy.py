@@ -84,6 +84,14 @@ rules:
         allow_statements: [SELECT]
         max_limit: 500
 
+  "*_query":
+    action: allow
+    description: "Allow read-only SQL queries across MCP servers."
+    plugins:
+      - name: sql_guard
+        allow_statements: [SELECT]
+        max_limit: 500
+
   read_file:
     action: allow
     description: "Allow reading project files while blocking secrets and path escapes."
@@ -91,6 +99,21 @@ rules:
       - name: filesystem_guard
         allowed_roots: ["."]
         denied_patterns: [".env*", "*.pem", "*.key", "**/.ssh/**", "*id_rsa*"]
+
+  "read_*":
+    action: allow
+    description: "Allow read_* MCP file tools within project root."
+    plugins:
+      - name: filesystem_guard
+        allowed_roots: ["."]
+        denied_patterns: [".env*", "*.pem", "*.key", "**/.ssh/**", "*id_rsa*"]
+
+  "list_*":
+    action: allow
+    description: "Allow directory listing tools within project root."
+    plugins:
+      - name: filesystem_guard
+        allowed_roots: ["."]
 
   run_shell:
     action: allow
@@ -131,14 +154,27 @@ global_plugins:
     max_calls_per_minute: 60
 
 rules:
-  read_file:
+  "read_*":
     action: allow
     plugins:
       - name: filesystem_guard
         allowed_roots: ["."]
         denied_patterns: [".env*", "*.pem", "*.key", "**/.ssh/**"]
 
-  write_file:
+  "list_*":
+    action: allow
+    plugins:
+      - name: filesystem_guard
+        allowed_roots: ["."]
+
+  "write_*":
+    action: allow
+    plugins:
+      - name: filesystem_guard
+        allowed_roots: ["."]
+        denied_patterns: [".env*", "*.pem", "*.key", "**/.git/**"]
+
+  "edit_*":
     action: allow
     plugins:
       - name: filesystem_guard
@@ -180,6 +216,13 @@ rules:
         max_limit: 1000
 
   sqlite_query:
+    action: allow
+    plugins:
+      - name: sql_guard
+        allow_statements: [SELECT]
+        max_limit: 1000
+
+  "*_query":
     action: allow
     plugins:
       - name: sql_guard
@@ -268,3 +311,62 @@ class PolicyLoader:
                 self._mtime = current_mtime
                 return True
         return False
+
+
+def generate_policy_yaml(tool_names: list[str]) -> str:
+    """Synthesize a least-privilege starter policy.yaml from observed tool names."""
+    seen = sorted({name.strip() for name in tool_names if name and name.strip()})
+    rules: dict[str, Any] = {}
+
+    for name in seen:
+        low = name.lower()
+        if any(k in low for k in ("query", "sql", "select")):
+            rules[name] = {
+                "action": "allow",
+                "description": f"Auto-generated read-only SQL guard for {name}.",
+                "plugins": [{"name": "sql_guard", "allow_statements": ["SELECT"], "max_limit": 500}],
+            }
+        elif low.startswith(("read_", "list_", "get_", "search_", "directory_")) or low in {
+            "read_file",
+            "list_directory",
+        }:
+            rules[name] = {
+                "action": "allow",
+                "description": f"Auto-generated sandboxed read rule for {name}.",
+                "plugins": [
+                    {
+                        "name": "filesystem_guard",
+                        "allowed_roots": ["."],
+                        "denied_patterns": [".env*", "*.pem", "*.key", "**/.ssh/**", "*id_rsa*"],
+                    }
+                ],
+            }
+        elif any(k in low for k in ("shell", "bash", "terminal", "exec", "command")):
+            rules[name] = {
+                "action": "require_approval",
+                "message": f"Confirm shell execution for {name}.",
+                "plugins": [
+                    {
+                        "name": "shell_guard",
+                        "allowed_commands": ["ls", "dir", "pwd", "git", "pytest", "echo"],
+                        "block_chaining": True,
+                    }
+                ],
+            }
+        else:
+            rules[name] = {
+                "action": "require_approval",
+                "message": f"Review {name} call before execution.",
+            }
+
+    doc = {
+        "version": "1",
+        "mode": "enforce",
+        "defaults": {"action": "deny", "approval_timeout_seconds": 120, "retention_days": 90},
+        "global_plugins": [
+            {"name": "secret_scanner", "enabled": True},
+            {"name": "rate_limiter", "enabled": True, "max_calls_per_minute": 30},
+        ],
+        "rules": rules,
+    }
+    return yaml.safe_dump(doc, sort_keys=False)

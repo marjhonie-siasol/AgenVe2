@@ -7,8 +7,10 @@ interface PolicyViewProps {
   policyYaml: string;
   policyMsg: { ok: boolean; text: string } | null;
   saving: boolean;
+  generating: boolean;
   onPolicyChange: (value: string) => void;
   onSavePolicy: () => Promise<void>;
+  onGeneratePolicy: () => Promise<void>;
 }
 
 export function PolicyView({
@@ -16,8 +18,10 @@ export function PolicyView({
   policyYaml,
   policyMsg,
   saving,
+  generating,
   onPolicyChange,
   onSavePolicy,
+  onGeneratePolicy,
 }: PolicyViewProps) {
   return (
     <motion.div
@@ -37,14 +41,24 @@ export function PolicyView({
           </p>
         </div>
 
-        <button
-          type="button"
-          disabled={saving}
-          onClick={onSavePolicy}
-          className="rounded-lg bg-[#2563EB] px-3.5 py-1.5 text-xs font-medium text-white transition-colors hover:bg-blue-700 disabled:opacity-50 cursor-pointer"
-        >
-          {saving ? "Saving..." : "Save & hot-reload"}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            disabled={generating}
+            onClick={onGeneratePolicy}
+            className="rounded-lg border border-black/[0.12] bg-white px-3 py-1.5 text-xs font-medium text-neutral-700 transition-colors hover:bg-neutral-50 disabled:opacity-50 cursor-pointer"
+          >
+            {generating ? "Generating..." : "Generate from logs"}
+          </button>
+          <button
+            type="button"
+            disabled={saving}
+            onClick={onSavePolicy}
+            className="rounded-lg bg-[#2563EB] px-3.5 py-1.5 text-xs font-medium text-white transition-colors hover:bg-blue-700 disabled:opacity-50 cursor-pointer"
+          >
+            {saving ? "Saving..." : "Save & hot-reload"}
+          </button>
+        </div>
       </div>
 
       <section className="agenve2-card overflow-hidden rounded-xl">

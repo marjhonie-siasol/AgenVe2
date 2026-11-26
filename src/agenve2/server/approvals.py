@@ -1,8 +1,11 @@
 from __future__ import annotations
 
 import asyncio
+import hashlib
+import hmac
 import json
 import os
+import secrets
 from collections.abc import Awaitable, Callable
 from typing import Any
 
@@ -27,13 +30,38 @@ class ApprovalManager:
         repository: AuditRepository,
         on_event: EventCallback | None = None,
         webhook_url: str | None = None,
+        public_url: str | None = None,
+        webhook_secret: str | None = None,
     ) -> None:
         self.repository = repository
         self.on_event = on_event
         self.webhook_url = (
             webhook_url or os.getenv("AGENVE2_WEBHOOK_URL") or os.getenv("VETO_WEBHOOK_URL")
         )
+        self.public_url = (
+            public_url or os.getenv("AGENVE2_PUBLIC_URL") or "http://127.0.0.1:8080"
+        ).rstrip("/")
+        self._webhook_secret = (
+            webhook_secret or os.getenv("AGENVE2_WEBHOOK_SECRET") or secrets.token_hex(32)
+        ).encode("utf-8")
         self._pending: dict[str, tuple[ApprovalTicket, asyncio.Event]] = {}
+
+    def sign_quick_decision(self, ticket_id: str, approved: bool) -> str:
+        msg = f"{ticket_id}:{'1' if approved else '0'}".encode()
+        return hmac.new(self._webhook_secret, msg, hashlib.sha256).hexdigest()
+
+    def verify_quick_decision(self, ticket_id: str, approved: bool, token: str) -> bool:
+        expected = self.sign_quick_decision(ticket_id, approved)
+        return hmac.compare_digest(expected, token)
+
+    def quick_decision_urls(self, ticket_id: str) -> tuple[str, str]:
+        approve_tok = self.sign_quick_decision(ticket_id, True)
+        deny_tok = self.sign_quick_decision(ticket_id, False)
+        base = f"{self.public_url}/api/approvals/{ticket_id}/quick-decide"
+        return (
+            f"{base}?approved=true&token={approve_tok}",
+            f"{base}?approved=false&token={deny_tok}",
+        )
 
     def list_pending(self) -> list[dict[str, Any]]:
         return [
@@ -56,25 +84,28 @@ class ApprovalManager:
         if self.on_event:
             try:
                 await self.on_event({"type": event_type, "data": payload})
-            except Exception:
+            except Exception:  # noqa: BLE001, S110
                 pass
 
     async def _send_webhook(self, ticket: ApprovalTicket) -> None:
         if not self.webhook_url:
             return
         preview = json.dumps(ticket.redacted_arguments, indent=2)[:800]
+        approve_url, deny_url = self.quick_decision_urls(ticket.id)
         text = (
             f"*AgenVe2 Approval Needed* (`{ticket.id}`)\n"
             f"*Agent:* `{ticket.agent_name}` | *Tool:* `{ticket.tool_name}`\n"
             f"*Rule:* `{ticket.rule_triggered}`\n"
-            f"```{preview}```"
+            f"```{preview}```\n"
+            f"Approve: {approve_url}\n"
+            f"Deny: {deny_url}"
         )
         # Compatible with both Slack ("text") and Discord ("content")
         body = {"text": text, "content": text}
         try:
             async with httpx.AsyncClient(timeout=5.0) as client:
                 await client.post(self.webhook_url, json=body)
-        except Exception:
+        except Exception:  # noqa: BLE001, S110
             pass
 
     async def request_approval(

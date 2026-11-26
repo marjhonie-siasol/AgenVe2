@@ -60,7 +60,7 @@ class SQLGuardPlugin(GuardPlugin):
 
         try:
             statements = sqlglot.parse(sql, read=dialect)
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001
             return FilterResult(
                 plugin_name=self.name,
                 passed=False,

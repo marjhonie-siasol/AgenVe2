@@ -11,6 +11,7 @@ Usage:
 from __future__ import annotations
 
 import os
+
 from agenve2 import AgenVe2BlockedError, AgenVe2Client
 
 POLICY_PATH = os.getenv("AGENVE2_POLICY") or os.getenv("VETO_POLICY", "policy.example.yaml")
@@ -22,7 +23,7 @@ agenve2 = AgenVe2Client(policy=POLICY_PATH, agent_name="quickstart-demo-agent")
 # 2. Define tools guarded by AgenVe2's deterministic policies
 @agenve2.guard("postgres_query")
 def postgres_query(query: str) -> str:
-    return f"[DATABASE EXECUTED]: Query succeeded -> 5 rows returned."
+    return "[DATABASE EXECUTED]: Query succeeded -> 5 rows returned."
 
 
 @agenve2.guard("read_file")
@@ -67,7 +68,7 @@ def main() -> None:
         except AgenVe2BlockedError as exc:
             rule = exc.report.get("rule_triggered", "policy")
             print(f"    [BLOCKED] -> {exc.reason} (Rule: {rule})")
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001
             print(f"    [HALTED]  -> {exc}")
 
     print("\n" + "=" * 70)

@@ -6,7 +6,7 @@ from typing import Any
 
 from fastapi import FastAPI, HTTPException, Query, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import PlainTextResponse
+from fastapi.responses import HTMLResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
@@ -19,7 +19,7 @@ from agenve2.core.models import (
     ToolCallRequest,
 )
 from agenve2.core.pipeline import EvaluationPipeline
-from agenve2.core.policy import PolicyError, PolicyLoader
+from agenve2.core.policy import PolicyError, PolicyLoader, generate_policy_yaml
 from agenve2.plugins import PluginRegistry, create_default_registry
 from agenve2.server.approvals import ApprovalManager
 from agenve2.storage.repository import SQLModelAuditRepository
@@ -44,7 +44,7 @@ class ConnectionHub:
         for ws in list(self._connections):
             try:
                 await ws.send_text(payload)
-            except Exception:
+            except Exception:  # noqa: BLE001
                 dead.append(ws)
         for ws in dead:
             self._connections.discard(ws)
@@ -288,6 +288,32 @@ def create_app(
             )
         return ticket.model_dump(mode="json")
 
+    @app.get("/api/approvals/{ticket_id}/quick-decide", response_class=HTMLResponse)
+    async def quick_decide_approval(
+        ticket_id: str,
+        approved: bool = Query(...),
+        token: str = Query(...),
+    ) -> HTMLResponse:
+        if not rt.approvals.verify_quick_decision(ticket_id, approved, token):
+            raise HTTPException(status_code=403, detail="Invalid or tampered approval token.")
+        ticket = await rt.approvals.decide(
+            ticket_id=ticket_id,
+            approved=approved,
+            decided_by="webhook-link",
+        )
+        if not ticket:
+            return HTMLResponse(
+                content=f"<h3>AgenVe2</h3><p>Ticket <code>{ticket_id}</code> is no longer pending.</p>",
+                status_code=404,
+            )
+        verdict = "APPROVED" if approved else "DENIED"
+        return HTMLResponse(
+            content=(
+                f"<h3>AgenVe2 Decision Recorded: {verdict}</h3>"
+                f"<p>Ticket <code>{ticket_id}</code> for <code>{ticket.tool_name}</code>.</p>"
+            )
+        )
+
     @app.get("/api/policy")
     async def get_policy() -> dict[str, Any]:
         rt.policy_loader.reload_if_changed()
@@ -313,6 +339,18 @@ def create_app(
             "parsed": config.model_dump(mode="json"),
         }
 
+    @app.post("/api/policy/generate")
+    async def generate_policy_from_audit(limit: int = Query(default=500, ge=1, le=2000)) -> dict[str, Any]:
+        logs = rt.repository.list_logs(limit=limit)
+        tools = [str(row["tool_name"]) for row in logs]
+        if not tools:
+            raise HTTPException(
+                status_code=400,
+                detail="No audit logs found yet. Run tools in dry-run or enforce mode first.",
+            )
+        yaml_content = generate_policy_yaml(tools)
+        return {"yaml_content": yaml_content, "tool_count": len(set(tools))}
+
     @app.websocket("/ws")
     async def websocket_endpoint(ws: WebSocket) -> None:
         await rt.hub.connect(ws)
@@ -334,7 +372,7 @@ def create_app(
                 await ws.receive_text()
         except WebSocketDisconnect:
             rt.hub.disconnect(ws)
-        except Exception:
+        except Exception:  # noqa: BLE001
             rt.hub.disconnect(ws)
 
     if serve_dashboard:

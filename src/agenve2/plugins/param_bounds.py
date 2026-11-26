@@ -63,32 +63,29 @@ class ParamBoundsPlugin(GuardPlugin):
                         details={"param": param_name, "value": val, "max": spec["max"]},
                     )
 
-            if "max_length" in spec and isinstance(val, str):
-                if len(val) > int(spec["max_length"]):
-                    return FilterResult(
-                        plugin_name=self.name,
-                        passed=False,
-                        decision=Decision.BLOCK,
-                        reason=f"Parameter '{param_name}' length {len(val)} exceeds max_length={spec['max_length']}.",
-                    )
+            if "max_length" in spec and isinstance(val, str) and len(val) > int(spec["max_length"]):
+                return FilterResult(
+                    plugin_name=self.name,
+                    passed=False,
+                    decision=Decision.BLOCK,
+                    reason=f"Parameter '{param_name}' length {len(val)} exceeds max_length={spec['max_length']}.",
+                )
 
-            if "regex" in spec and isinstance(val, str):
-                if not re.fullmatch(spec["regex"], val):
-                    return FilterResult(
-                        plugin_name=self.name,
-                        passed=False,
-                        decision=Decision.BLOCK,
-                        reason=f"Parameter '{param_name}' failed regex policy '{spec['regex']}'.",
-                    )
+            if "regex" in spec and isinstance(val, str) and not re.fullmatch(spec["regex"], val):
+                return FilterResult(
+                    plugin_name=self.name,
+                    passed=False,
+                    decision=Decision.BLOCK,
+                    reason=f"Parameter '{param_name}' failed regex policy '{spec['regex']}'.",
+                )
 
-            if "max_items" in spec and isinstance(val, list):
-                if len(val) > int(spec["max_items"]):
-                    return FilterResult(
-                        plugin_name=self.name,
-                        passed=False,
-                        decision=Decision.BLOCK,
-                        reason=f"Parameter '{param_name}' has {len(val)} items (max_items={spec['max_items']}).",
-                    )
+            if "max_items" in spec and isinstance(val, list) and len(val) > int(spec["max_items"]):
+                return FilterResult(
+                    plugin_name=self.name,
+                    passed=False,
+                    decision=Decision.BLOCK,
+                    reason=f"Parameter '{param_name}' has {len(val)} items (max_items={spec['max_items']}).",
+                )
 
         return FilterResult(
             plugin_name=self.name,
