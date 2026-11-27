@@ -11,6 +11,7 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/marjhonie-siasol/AgenVe2/actions/workflows/ci.yml"><img src="https://github.com/marjhonie-siasol/AgenVe2/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-blue.svg" alt="License" /></a>
   <a href="pyproject.toml"><img src="https://img.shields.io/badge/python-3.11+-blue.svg" alt="Python" /></a>
   <a href="#integration-modes"><img src="https://img.shields.io/badge/protocol-MCP%20Stdio%20Proxy-green.svg" alt="Protocol" /></a>
