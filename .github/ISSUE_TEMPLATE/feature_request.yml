@@ -1,0 +1,19 @@
+name: Feature Request
+description: Propose a new guard plugin, integration, or improvement
+title: "feat: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or use case
+      description: What real-world agent workflow or threat does this address?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: How should AgenVe2 solve this?
+    validations:
+      required: true

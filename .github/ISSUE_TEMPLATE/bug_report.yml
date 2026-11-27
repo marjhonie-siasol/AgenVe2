@@ -1,0 +1,27 @@
+name: Bug Report
+description: Report a bug or unexpected firewall decision in AgenVe2
+title: "bug: "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: What happened?
+      description: Describe the unexpected behavior or error.
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: Include your policy.yaml rule, CLI command, or tool call payload.
+      placeholder: |
+        1. Run `agenve2 ...`
+        2. Send tool call ...
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, Python version, and MCP client (e.g., Windows 11, Python 3.12, Antigravity)
