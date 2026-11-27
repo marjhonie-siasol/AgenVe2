@@ -21,6 +21,10 @@
 
 AgenVe2 intercepts and evaluates tool calls in sub-3ms latency using native Abstract Syntax Tree (AST) parsing and lexical tokenizers before destructive operations touch databases, filesystems, shell processes, or external APIs.
 
+<p align="center">
+  <img src="assets/demo.gif" alt="AgenVe2 Live Firewall & Approval Console Demo" width="900" />
+</p>
+
 ---
 
 ## Table of Contents
